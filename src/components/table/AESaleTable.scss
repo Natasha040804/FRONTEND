@@ -1,0 +1,256 @@
+.receipt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.sale-receipt {
+  background: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  .receipt-header {
+    background: linear-gradient(135deg, #1e3a8a, #3730a3);
+    color: white;
+    padding: 20px;
+    position: relative;
+    
+    .company-info {
+      text-align: center;
+      
+      h2 {
+        margin: 0 0 5px 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+      
+      p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+      }
+    }
+    
+    .receipt-close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      cursor: pointer;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+    }
+  }
+
+  .receipt-content {
+    padding: 0;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .receipt-section {
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+    
+    &:last-of-type {
+      border-bottom: none;
+    }
+    
+    h3 {
+      margin: 0 0 15px 0;
+      color: #1e3a8a;
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .receipt-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    
+    .receipt-field {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      
+      .field-label {
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 0.9rem;
+      }
+      
+      .field-value {
+        color: #2d3748;
+        font-weight: 500;
+        text-align: right;
+      }
+    }
+  }
+
+  .price-breakdown {
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px dashed #cbd5e0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &.total {
+        background: #f0fff4;
+        margin: 10px -10px -10px -10px;
+        padding: 15px 10px;
+        border-radius: 6px;
+        border: 1px solid #9ae6b4;
+      }
+    }
+  }
+
+  .terms {
+    p {
+      margin: 8px 0;
+      font-size: 0.85rem;
+      color: #718096;
+      line-height: 1.4;
+    }
+  }
+
+  .signature-area {
+    text-align: center;
+    padding: 20px 0;
+    
+    .signature-line {
+      width: 200px;
+      height: 1px;
+      background: #cbd5e0;
+      margin: 0 auto 5px auto;
+    }
+    
+    p {
+      margin: 0;
+      color: #718096;
+      font-size: 0.9rem;
+    }
+  }
+
+  .receipt-footer {
+    background: #f8fafc;
+    border-top: 2px solid #e2e8f0;
+    
+    .receipt-actions {
+      display: flex;
+      gap: 10px;
+      padding: 15px 20px;
+      
+      button {
+        flex: 1;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+        
+        &.btn-print {
+          background: #e2e8f0;
+          color: #4a5568;
+          
+          &:hover {
+            background: #cbd5e0;
+          }
+        }
+        
+        &.btn-confirm-sale {
+          background: #059669;
+          color: white;
+          
+          &:hover {
+            background: #047857;
+          }
+        }
+      }
+    }
+    
+    .receipt-footer-text {
+      text-align: center;
+      padding: 10px 20px;
+      border-top: 1px solid #e2e8f0;
+      
+      p {
+        margin: 5px 0;
+        color: #718096;
+        font-size: 0.85rem;
+      }
+    }
+  }
+}
+
+/* Print Styles for Receipt */
+@media print {
+  .receipt-overlay {
+    position: static;
+    background: white;
+    padding: 0;
+  }
+  
+  .sale-receipt {
+    box-shadow: none;
+    max-width: none;
+    max-height: none;
+    
+    .receipt-close-btn,
+    .receipt-actions {
+      display: none !important;
+    }
+  }
+  
+  body * {
+    visibility: hidden;
+  }
+  
+  .sale-receipt,
+  .sale-receipt * {
+    visibility: visible;
+  }
+  
+  .sale-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}

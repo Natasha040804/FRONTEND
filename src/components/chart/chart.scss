@@ -1,0 +1,141 @@
+.chart {
+  flex: 1 1 100%;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  -webkit-box-shadow: 2px 4px 10px 1px rgba(0, 0, 0, 0.47);
+  box-shadow: 2px 4px 10px 1px rgba(201, 201, 201, 0.47);
+  padding: 25px;
+  color: #f5d109;
+  border-radius: 15px;
+  background: #bf40bf;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  /* Use aspect-ratio for responsive height based on width */
+  aspect-ratio: 3 / 1;
+  height: auto;
+  max-height: 420px; /* prevent excessive vertical stretch */
+  overflow: hidden;
+  .chart {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    -webkit-box-shadow: 2px 4px 10px 1px rgba(0, 0, 0, 0.47);
+    box-shadow: 2px 4px 10px 1px rgba(201, 201, 201, 0.47);
+    padding: 25px;
+    color: #f5d109;
+    border-radius: 15px;
+    background: #bf40bf;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    /* Height tuning for large desktop (1920x1080) while remaining responsive */
+    height: clamp(300px, 32vh, 380px);
+    overflow: hidden;
+    flex: 1;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    min-height: 160px;
+  }
+
+  .chartGrid {
+    stroke: white;
+  }
+
+  .custom-tooltip {
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid #495057;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+
+    .tooltip-label {
+      color: #fff;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .tooltip-value {
+      color: #adb5bd;
+      font-size: 14px;
+      strong { color: #fff; font-weight: 700; }
+    }
+  }
+
+  @media (max-width: 1400px) {
+    height: clamp(300px, 34vh, 360px);
+  }
+  @media (max-width: 1100px) {
+    height: clamp(280px, 36vh, 340px);
+    padding: 20px;
+  }
+  @media (max-width: 900px) {
+    height: clamp(260px, 38vh, 330px);
+    padding: 18px;
+  }
+  @media (max-width: 768px) {
+    height: clamp(240px, 40vh, 320px);
+    padding: 16px;
+    .title { font-size: 16px; margin-bottom: 16px; }
+  }
+  @media (max-width: 600px) {
+    height: clamp(220px, 42vh, 300px);
+    padding: 14px;
+    .title { font-size: 15px; }
+  }
+
+  .recharts-responsive-container { flex: 1; }
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line { stroke: #f1f3f4; }
+
+.recharts-default-tooltip {
+  border: none !important;
+  border-radius: 8px !important;
+  background: rgba(0, 0, 0, 0.9) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+// Error banner for chart
+.chart-error {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+
+  .error-message {
+    color: #856404;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+/* Smaller chart variant typically used beside Featured */
+.chart.chart--small {
+  flex: 1;
+  /* Override base height clamp so we can match Featured card height */
+  height: 100%; /* stretch to full row height */
+  min-height: 400px; /* baseline */
+  /* Allow it to grow if sibling (Featured) is taller */
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure the internal responsive container actually fills vertical space */
+.chart.chart--small > div { /* wrapper we added around ResponsiveContainer */
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0; /* allow child to shrink without overflow */
+}
+
+.chart.chart--small .recharts-responsive-container {
+  flex: 1 1 auto;
+  min-height: 0;
+}

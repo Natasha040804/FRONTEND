@@ -1,0 +1,204 @@
+.dashboard {
+  display: flex;
+  /* Explicit dashboard background to avoid inheriting login styles */
+  background-color: #f8cdf8ce;
+  min-height: 100vh;
+  height: 100vh; /* ensure full viewport height so sidebar can stick */
+
+  .dashboardContainer {
+    flex: 6;
+  background-color: transparent; /* keep inner container neutral */
+  /* Make the main container fill remaining height and scroll when content overflows */
+  min-height: calc(100vh - var(--header-height));
+  overflow-y: auto;
+
+    .branchBanner {
+      margin: 20px 20px 0;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(79, 70, 229, 0.1));
+      color: #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+
+      span {
+        font-weight: 600;
+      }
+
+      small {
+        color: #475569;
+        font-size: 0.85rem;
+      }
+    }
+
+    .widgets,
+    .charts,
+    .chartsRow {
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+      flex-shrink: 0; /* prevent shrinking when content grows */
+    }
+
+    .charts {
+      padding: 5px 20px;
+      position: relative;
+      z-index: 1; /* keep stacking simple; first row appears above background */
+    }
+
+    /* Charts row holding the donut (Featured) and the bar chart side by side */
+    .chartsRow {
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+      margin-top: 10px;
+      align-items: stretch; /* ensure equal height visuals */
+
+      /* Equal width with constraints for both charts */
+      .featured,
+      .chart {
+        flex: 1 1 300px; /* grow, shrink, basis */
+        min-height: 400px;
+        box-sizing: border-box;
+      }
+
+      /* Ensure inner chart layout doesn't collapse */
+      .chart {
+        display: flex;
+        flex-direction: column;
+
+        .title { flex-shrink: 0; }
+      }
+    }
+
+    /* Responsive: two columns down to one */
+    @media (max-width: 1200px) {
+      .chartsRow {
+        .featured,
+        .chart { flex-basis: calc(50% - 10px); }
+      }
+    }
+    @media (max-width: 768px) {
+      .chartsRow {
+        .featured,
+        .chart {
+          flex-basis: 100%;
+          min-width: 100%;
+        }
+      }
+    }
+
+    .listContainer {
+      background-color: #bf40bf;
+      -webkit-box-shadow: 2px 4px 10px 1px rgba(0, 0, 0, 0.47);
+      box-shadow: 2px 4px 10px 1px rgba(201, 201, 201, 0.47);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px;
+
+      /* UserManagement actions: search on left, buttons on right */
+      .userActionsBar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 12px;
+
+        .left {
+          flex: 1 1 auto;
+          min-width: 220px;
+        }
+
+        .right {
+          margin-left: auto;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          /* Styled buttons (scoped to this bar only) */
+          .actionBtn {
+            appearance: none;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            font-size: 0.92rem;
+            cursor: pointer;
+            color: #ffffff;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+            box-shadow:
+              0 10px 15px -3px rgba(99, 102, 241, 0.25),
+              0 4px 6px -2px rgba(139, 92, 246, 0.25);
+            transition: transform 0.06s ease, box-shadow 0.2s ease, filter 0.2s ease;
+
+            &:hover {
+              filter: brightness(1.03);
+              box-shadow:
+                0 12px 20px -3px rgba(99, 102, 241, 0.32),
+                0 6px 10px -2px rgba(139, 92, 246, 0.32);
+            }
+
+            &:active {
+              transform: translateY(1px);
+              box-shadow:
+                0 8px 12px -3px rgba(99, 102, 241, 0.25),
+                0 3px 6px -2px rgba(139, 92, 246, 0.25);
+            }
+
+            &:disabled {
+              opacity: 0.65;
+              cursor: not-allowed;
+              filter: grayscale(10%);
+            }
+          }
+        }
+      }
+
+      .listTitle {
+        font-weight: 700;
+        font-size: 1.4rem;
+        line-height: 1.2;
+        color: #f5d109;
+        margin: 0;
+      }
+      
+      .inventoryHeaderRow {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+
+        .searchBar {
+          flex: 1 1 320px;
+          max-width: 480px;
+          margin-left: auto; /* push search to right */
+        }
+      }
+      
+      .approvalGrid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(260px, 1fr));
+        gap: 16px;
+        padding: 16px 0;
+      }
+      
+      @media (max-width: 1200px) {
+        .approvalGrid {
+          grid-template-columns: repeat(2, minmax(240px, 1fr));
+        }
+      }
+      @media (max-width: 700px) {
+        .approvalGrid {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+    }
+  }
+}

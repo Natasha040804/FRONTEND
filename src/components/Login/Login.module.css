@@ -1,0 +1,95 @@
+/* Login.module.css */
+.blurred {
+    filter: blur(5px);
+}
+
+.inputBox {
+    position: relative;
+    margin: 30px 0;
+}
+
+.inputBox .icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--first-color);
+}
+
+.inputBox input {
+    width: 100%;
+    padding: 12px 20px 12px 40px;
+    border: 2px solid var(--first-color);
+    border-radius: 25px;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.inputBox input:focus {
+    border-color: var(--first-color-dark);
+}
+
+.loginSubmit {
+    width: 100%;
+    height: 45px;
+    background: var(--first-color);
+    border: none;
+    outline: none;
+    border-radius: 25px;
+    cursor: pointer;
+    color: var(--white-color);
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.loginSubmit:hover {
+    background: var(--first-color-dark);
+}
+
+.loginSubmit:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+.errorMessage {
+    color: #ff3333;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* Password visibility toggle placed inside the input on the right */
+.passwordToggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--first-color);
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.passwordToggle:focus-visible {
+    outline: 2px solid var(--first-color-dark);
+    border-radius: 4px;
+}
+
+.passwordToggle:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Ensure right padding so text doesn't go under the toggle button */
+.inputBox input[type="password"],
+.inputBox input[type="text"]#password {
+    padding-right: 48px; /* create space for toggle icon */
+}

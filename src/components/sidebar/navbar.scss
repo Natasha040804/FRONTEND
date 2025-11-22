@@ -1,0 +1,344 @@
+.navbar {
+  height: 50px;
+  border-bottom: 0.5px solid rgb(231, 228, 228);
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #555;
+
+  .wrapper {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .search {
+      display: flex;
+      align-items: center;
+      border: 0.5px solid lightgray;
+      padding: 3px;
+
+      input {
+        border: none;
+        outline: none;
+        background: transparent;
+
+        &::placeholder {
+          font-size: 12px;
+        }
+      }
+    }
+
+    .items {
+      display: flex;
+      align-items: center;
+
+      .actionGroup {
+        display: flex;
+        gap: 8px;
+        margin-right: 12px;
+        align-items: center;
+
+        .actionBtn {
+          padding: 6px 10px;
+          border-radius: 8px;
+          border: none;
+          cursor: pointer;
+          font-weight: 700;
+          color: #fff;
+          background: rgba(255,255,255,0.06);
+          transition: background 160ms ease, transform 120ms ease, box-shadow 160ms ease;
+          box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+        }
+
+        .actionBtn.add {
+          background: linear-gradient(90deg, #34c3ff 0%, #1da1f2 100%);
+          color: #fff;
+          box-shadow: 0 8px 20px rgba(29,161,242,0.18);
+        }
+
+        .actionBtn.update {
+          background: linear-gradient(90deg, #ffd54a 0%, #ffc107 100%);
+          color: #1f1f1f;
+          box-shadow: 0 8px 20px rgba(255,193,7,0.12);
+        }
+
+        .actionBtn.delete {
+          background: linear-gradient(90deg, #ff6b6b 0%, #dc3545 100%);
+          color: #fff;
+          box-shadow: 0 8px 20px rgba(220,53,69,0.16);
+        }
+
+        .actionBtn:hover {
+          transform: translateY(-3px) scale(1.02);
+          background: rgba(255,255,255,0.09);
+          box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+      }
+
+      .item {
+        display: flex;
+        align-items: center;
+        margin-right: 20px;
+        position: relative;
+
+        .icon {
+          font-size: 20px;
+        }
+
+        .avatar {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+        }
+
+        .counter {
+          width: 15px;
+          height: 15px;
+          background-color: red;
+          border-radius: 50%;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 10px;
+          font-weight: bold;
+          position: absolute;
+          top: -5px;
+          right: -5px;
+        }
+      }
+    }
+  }
+}
+// ...existing code ...
+/* Modal styles (append) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal {
+  /* align with table min width and be responsive */
+  width: min(900px, calc(100% - 32px));
+  min-width: 650px; /* match table min width used in Table component */
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.28);
+  overflow: hidden;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  /* Keep modal within viewport and let body scroll */
+  max-height: calc(100vh - 80px);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(90deg,#6f2b6f,#bf40bf);
+  color: #fff;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 12px 16px;
+  /* allow body to scroll while header/footer stay fixed */
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+
+/* nicer scrollbars for modal body */
+.modal-body::-webkit-scrollbar {
+  width: 10px;
+}
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12);
+  border-radius: 10px;
+}
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 14px;
+}
+
+.input-grid label {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  color: #222;
+}
+
+.input-grid input {
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.08);
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Stylish form tweaks for AddUserModal */
+.input-grid label {
+  font-weight: 600;
+  color: #334155;
+}
+
+.input-grid input,
+.input-grid select,
+.input-grid textarea {
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #e6e9ef;
+  background: linear-gradient(180deg,#ffffff,#fbfbfe);
+  box-shadow: 0 6px 18px rgba(20,24,40,0.04) inset;
+  transition: box-shadow 180ms ease, border-color 160ms ease, transform 120ms ease;
+  font-size: 14px;
+}
+
+.input-grid input:focus,
+.input-grid select:focus,
+.input-grid textarea:focus {
+  outline: none;
+  border-color: rgba(124,58,237,0.9);
+  box-shadow: 0 8px 28px rgba(124,58,237,0.08), 0 2px 6px rgba(0,0,0,0.04) inset;
+  transform: translateY(-1px);
+}
+
+/* nicer select */
+.input-grid select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #666 50%), linear-gradient(135deg, #666 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 36px;
+}
+
+/* file input: keep native input but add preview border */
+.input-grid input[type="file"] {
+  padding: 6px 10px;
+  background: transparent;
+}
+
+.input-grid img {
+  margin-top: 8px;
+  border-radius: 8px;
+  border: 1px solid #eceef6;
+  box-shadow: 0 8px 20px rgba(16,24,40,0.06);
+}
+
+/* subtle modal refinements */
+.modal {
+  border-radius: 12px;
+  padding: 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.2px;
+}
+
+.modal-close {
+  background: rgba(255,255,255,0.12);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-footer .btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+
+.btn.primary {
+  box-shadow: 0 12px 34px rgba(124,58,237,0.16);
+}
+
+/* ensure grid children can shrink on small screens */
+.input-grid > label {
+  min-width: 0;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fafafa;
+  /* keep footer visible while body scrolls */
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  box-shadow: 0 -6px 12px rgba(0,0,0,0.04);
+}
+
+.btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.btn.primary {
+  background: linear-gradient(90deg,#bf40bf,#8a2fa7);
+  color: #fff;
+}
+
+.btn.secondary {
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.08);
+  color: #333;
+}
+
+.modal-error {
+  color: #b00020;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+/* responsive adjustments */
+@media (max-width: 820px) {
+  .modal {
+    width: calc(100% - 32px);
+    max-width: calc(100% - 32px);
+    border-radius: 8px;
+  }
+
+  .input-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-height: 700px) {
+  .modal {
+    max-height: calc(100vh - 48px);
+  }
+}

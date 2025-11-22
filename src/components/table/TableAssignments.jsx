@@ -1,0 +1,253 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import './table.scss';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import { createPortal } from 'react-dom';
+import { getApiBase } from '../../apiBase';
+import ApiService from '../../utils/api';
+import TrackDelivery from '../delivery/TrackDelivery';
+// auth context not required for public endpoint fetch
+
+// Columns: Assignment ID, Assignment Type, Assigned By (Username), Assigned To, To Branch, Pickup Proof, Drop Off
+// Drop Off opens detail card + form similar to generic detail pattern
+const TableAssignments = ({ refreshKey = 0, searchTerm = '', onSubmitDropoff }) => {
+  const [assignments, setAssignments] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selected, setSelected] = useState(null); // currently opened assignment
+  const [viewing, setViewing] = useState(null); // assignment being tracked
+  const API_BASE = getApiBase();
+  
+
+  // Using a fixed dependency list to avoid HMR warnings about changing array size
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchAssignments = async () => {
+      try {
+        setLoading(true);
+        // Use public active assignments to avoid auth 401 on dashboards
+        const res = await fetch(`${API_BASE}/api/delivery-assignments/active`, { signal: controller.signal, credentials: 'include' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const payload = await res.json();
+        const data = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : [];
+        // build quick lookup maps from fetched branches and users
+        const branchMap = (branches || []).reduce((m, b) => { m[String(b.BranchID)] = b.BranchName; return m; }, {});
+        const userMap = (users || []).reduce((m, u) => { m[String(u.Account_id || u.Account_id || u.Account_id)] = (u.Username || u.Username || u.Fullname || ''); return m; }, {});
+
+        const rows = data.map((a, idx) => ({
+          assignmentId: a.assignment_id || a.AssignmentID || a.assignmentId || a.id || `A-${1000 + idx}`,
+          assignmentType: a.assignment_type || a.AssignmentType || '—',
+          assignedBy: a.assigned_by_username || a.assigned_by_name || (a.assigned_by ? (userMap[String(a.assigned_by)] || a.assigned_by) : (a.AssignedBy || '—')),
+          assignedTo: a.driver_name || a.assigned_to_name || a.assigned_to || a.AssignedTo || '—',
+          toBranchName: a.to_branch_name || a.ToBranchName || (a.to_branch_id ? (branchMap[String(a.to_branch_id)] || a.to_branch_id) : '—'),
+
+          pickupProof: a.item_image || a.pickup_image || null,
+          dropOffStatus: a.status || a.DropOffStatus || a.dropOffStatus || 'Pending',
+          fromBranchName: a.from_branch_name || a.FromBranchName || (a.from_branch_id ? (branchMap[String(a.from_branch_id)] || a.from_branch_id) : '—'),
+          fromBranchId: a.from_branch_id || a.fromBranchId || a.from_branch || '—',
+        }));
+        setAssignments(rows.length ? rows : [
+          { assignmentId: 'A-1001', assignedBy: 'Admin', assignedTo: 'Rider 01', dropOffStatus: 'Pending' },
+          { assignmentId: 'A-1002', assignedBy: 'Auditor', assignedTo: 'Rider 02', dropOffStatus: 'Pending' },
+          { assignmentId: 'A-1003', assignedBy: 'AE John', assignedTo: 'Rider 03', dropOffStatus: 'Pending' }
+        ]);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Assignments fetch error:', err);
+          setError('Failed to load assignments');
+          setAssignments([
+            { assignmentId: 'A-1001', assignedBy: 'Admin', assignedTo: 'Rider 01', dropOffStatus: 'Pending' },
+            { assignmentId: 'A-1002', assignedBy: 'Auditor', assignedTo: 'Rider 02', dropOffStatus: 'Pending' },
+            { assignmentId: 'A-1003', assignedBy: 'AE John', assignedTo: 'Rider 03', dropOffStatus: 'Pending' }
+          ]);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAssignments();
+    return () => controller.abort();
+  }, [refreshKey, API_BASE, branches, users]);
+
+  // fetch branches and users lookup for display names (run once)
+  useEffect(() => {
+    const fetchLookups = async () => {
+      try {
+        const b = await ApiService.get('/api/users/branches');
+        if (b && b.success && Array.isArray(b.data)) setBranches(b.data);
+      } catch (e) {
+        console.warn('Could not fetch branches for assignments table', e);
+      }
+      try {
+        const u = await ApiService.get('/api/users');
+        if (Array.isArray(u)) setUsers(u);
+        else if (u && Array.isArray(u.data)) setUsers(u.data);
+      } catch (e) {
+        console.warn('Could not fetch users for assignments table', e);
+      }
+    };
+    fetchLookups();
+  }, []);
+
+  const filtered = useMemo(() => {
+    if (!searchTerm) return assignments;
+    const t = searchTerm.toLowerCase();
+    return assignments.filter(a => [a.assignmentId, a.assignedBy, a.assignedTo].some(f => f && String(f).toLowerCase().includes(t)));
+  }, [assignments, searchTerm]);    
+
+  const openDropOff = (row) => setSelected(row);
+  const closeModal = () => setSelected(null);
+  const closeTrack = () => setViewing(null);
+
+  useEffect(() => {
+    if (!selected) return;
+    const esc = (e) => { if (e.key === 'Escape') closeModal(); };
+    const outside = (e) => { if (selected && e.target.closest('.assignment-card') === null) closeModal(); };
+    document.addEventListener('keydown', esc);
+    document.addEventListener('mousedown', outside);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', esc);
+      document.removeEventListener('mousedown', outside);
+      document.body.style.overflow = 'unset';
+    };
+  }, [selected]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = Object.fromEntries(new FormData(e.currentTarget));
+    if (typeof onSubmitDropoff === 'function') onSubmitDropoff({ ...selected, ...formData });
+    closeModal();
+  };
+
+  const DetailCard = () => {
+    if (!selected) return null;
+    return createPortal(
+      <div className="detail-overlay">
+        <div className="detail-card assignment-card">
+          <div className="detail-card__header">
+            <div className="detail-card__title">
+              <div className="detail-card__item-id">Assignment #{selected.assignmentId}</div>
+              <div className="detail-card__item-desc">Assigned To: {selected.assignedTo}</div>
+            </div>
+            <div className="detail-card__header-actions">
+              <button className="detail-card__close-btn" onClick={closeModal} aria-label="close">×</button>
+            </div>
+          </div>
+          <div className="detail-card__sections">
+            <div className="detail-section">
+              <h3 className="detail-section__title">Assignment Details</h3>
+              <div className="detail-section__grid">
+                <div className="detail-field">
+                  <label className="detail-field__label">Assigned By</label>
+                  <div className="detail-field__value">{selected.assignedBy}</div>
+                </div>
+                <div className="detail-field">
+                  <label className="detail-field__label">Assigned To</label>
+                  <div className="detail-field__value">{selected.assignedTo}</div>
+                </div>
+                <div className="detail-field">
+                  <label className="detail-field__label">Status</label>
+                  <div className="detail-field__value">{selected.dropOffStatus}</div>
+                </div>
+              </div>
+            </div>
+            <div className="detail-section">
+              <h3 className="detail-section__title">Drop Off Form</h3>
+              <form onSubmit={handleSubmit} className="dropoff-form">
+                <div className="detail-section__grid">
+                  <div className="detail-field">
+                    <label className="detail-field__label">Branch</label>
+                    <input name="dropoffBranch" required placeholder="Enter branch" />
+                  </div>
+                  <div className="detail-field">
+                    <label className="detail-field__label">Receiver</label>
+                    <input name="receiver" required placeholder="Receiver name" />
+                  </div>
+                  <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
+                    <label className="detail-field__label">Notes</label>
+                    <textarea name="notes" rows={3} placeholder="Optional notes" />
+                  </div>
+                </div>
+                
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
+  if (loading) return <div className="loading">Loading assignments...</div>;
+  if (error) return <div className="error">{error}</div>;
+
+  return (
+    <>
+      <TableContainer 
+        component={Paper} 
+        className="table container"
+        style={{ maxHeight: '60vh', overflow: 'auto', '--col-count': 7, '--col-width': '180px', '--first-col-width': '220px' }}
+      >
+        <Table aria-label="assignments table">
+          <TableHead>
+            <TableRow>
+              <TableCell className="tableCell">Assignment ID</TableCell>
+              <TableCell className="tableCell">Assigned By</TableCell>
+              <TableCell className="tableCell">Assigned To</TableCell>
+              <TableCell className="tableCell">Assignment Type</TableCell>
+              <TableCell className="tableCell">Pick Up</TableCell>
+              <TableCell className="tableCell">Drop Off</TableCell>
+              <TableCell className="tableCell">View Location</TableCell>
+        
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filtered.map(a => (
+              <TableRow key={a.assignmentId} className="clickable-row">
+                <TableCell className="tableCell clickable" onClick={() => openDropOff(a)}>{a.assignmentId}</TableCell>
+                <TableCell className="tableCell clickable" onClick={() => openDropOff(a)}>{a.assignedBy}</TableCell>
+                <TableCell className="tableCell clickable" onClick={() => openDropOff(a)}>{a.assignedTo}</TableCell>
+                <TableCell className="tableCell clickable" onClick={() => openDropOff(a)}>{a.assignmentType || '—'}</TableCell>
+                <TableCell className="tableCell clickable" onClick={() => openDropOff(a)}>{a.fromBranchName || a.fromBranchId || '—'}</TableCell>
+                <TableCell className="tableCell clickable" onClick={() => openDropOff(a)}>{a.toBranchName || '—'}</TableCell>
+                <TableCell className="tableCell">
+                  <button type="button" className="btn btn--primary" onClick={() => setViewing(a)}>View Location</button>
+                </TableCell>
+               
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <DetailCard />
+      {viewing && (
+        <div className="detail-overlay">
+          <div className="detail-card assignment-card" style={{ width: '95%', maxWidth: 1100 }}>
+            <div className="detail-card__header">
+              <div className="detail-card__title">
+                <div className="detail-card__item-id">Tracking Assignment #{viewing.assignmentId}</div>
+                <div className="detail-card__item-desc">{viewing.assignedTo || ''}</div>
+              </div>
+              <div className="detail-card__header-actions">
+                <button className="detail-card__close-btn" onClick={closeTrack} aria-label="close">×</button>
+              </div>
+            </div>
+            <div className="detail-card__sections" style={{ height: '70vh' }}>
+              <TrackDelivery embedded assignmentId={viewing.assignmentId} onClose={closeTrack} />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default TableAssignments;

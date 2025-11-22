@@ -1,0 +1,108 @@
+.table {
+  
+  &.container {
+    width: 100%;
+    max-height: 100vh; /* adjust to taste */
+    overflow: auto; /* both axes if needed */
+    border-radius: 8px;
+  }
+
+  /* base table layout - ensure table can overflow horizontally */
+  table {
+    border-collapse: separate; /* keep vertical separators visible */
+    border-spacing: 0;
+    width: 100%;
+    min-width: 1200px; /* force horizontal scroll when many columns */
+  }
+
+  /* stylish sticky header */
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: linear-gradient(180deg, rgba(191,64,191,0.95), rgba(191,64,191,0.9));
+    color: #fff;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    
+  }
+
+  /* vertical lines between columns using cell borders */
+  td,
+  th {
+    padding: 10px 14px;
+    border-right: 1px solid rgba(0,0,0,0.06);
+    vertical-align: middle;
+    background-clip: padding-box;
+  }
+
+  /* remove right border on last cell to avoid double line */
+  tr > td:last-child,
+  tr > th:last-child {
+    border-right: none;
+  }
+
+  /* small subtle divider line under each header cell (for clarity) */
+  thead th::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    margin-top: 8px;
+    opacity: 0.9;
+  }
+
+  /* keep existing cell wrapper and image rules */
+  .cellWrapper {
+    display: flex;
+    align-items: center;
+
+    .image {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 10px;
+      object-fit: cover;
+    }
+  }
+
+  /* status badges preserved and slightly restyled */
+  .status {
+    padding: 6px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 12px;
+    display: inline-block;
+
+    &.Approved {
+      color: #2e7d32;
+      background-color: rgba(46,125,50,0.12);
+      border: 1px solid rgba(46,125,50,0.06);
+    }
+    &.Pending {
+      color: goldenrod;
+      background-color: rgba(189,189,3,0.08);
+      border: 1px solid rgba(189,189,3,0.04);
+    }
+  }
+
+  /* zebra row for readability (only body rows) */
+  tbody tr:nth-child(odd) td {
+    background: rgba(0,0,0,0.01);
+  }
+
+  /* responsive: reduce padding on small screens */
+  @media (max-width: 768px) {
+    table {
+      min-width: 900px;
+    }
+
+    thead th,
+    td,
+    th {
+      padding: 8px 10px;
+    }
+  }
+}

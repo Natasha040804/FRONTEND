@@ -1,0 +1,541 @@
+.sidebar {
+  flex: 0 0 240px; /* fixed width sidebar */
+  border-right: 0.5px solid rgb(230, 227, 227);
+  height: 100vh; /* full viewport height */
+  position: sticky; /* stay fixed relative to viewport while page scrolls */
+  top: 0;
+  background-color: #910b91;
+  display: flex;
+  flex-direction: column;
+
+  .top {
+    /* left-align logo + user info */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 12px 14px;
+    gap: 8px;
+
+    .brand {
+      display: flex;
+      align-items: center;
+        gap: 40px; /* extra space between logo and notification */
+      width: 100%;
+      color:#f5d109;
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 800;
+      color: #f5d109;
+      letter-spacing: 0.6px;
+      align-self: flex-start;
+    }
+
+    .notifButton {
+      background: transparent;
+      border: none;
+      color: #f5d109;
+      padding: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .notifButton:focus {
+      outline: 2px solid rgba(245,209,9,0.18);
+      outline-offset: 2px;
+    }
+
+    .notifIcon {
+      font-size: 20px;
+      color: #f5d109;
+    }
+
+    .notifBadge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      border-radius: 999px;
+      background: #ff4d4f; /* red unread indicator */
+      box-shadow: 0 0 0 2px rgba(145,11,145,0.18);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .notifWrapper {
+      position: relative;
+    }
+
+    .notifPane {
+      /* appear directly to the right of the bell icon inside the sidebar */
+      position: absolute;
+      top: 0; /* align with the icon row */
+      left: calc(100% + 8px); /* just outside the sidebar */
+      width: 320px;
+      max-height: 70vh;
+      background: #ffffff;
+      color: #222;
+      border-radius: 8px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+      overflow: hidden;
+      z-index: 1200; /* above most UI */
+    }
+
+    .notifPaneHeader {
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      background: linear-gradient(90deg, rgba(145,11,145,0.06), rgba(245,209,9,0.02));
+    }
+
+    .notifList {
+      max-height: 300px;
+      overflow: auto;
+      padding: 6px;
+    }
+
+    .notifItem {
+      padding: 8px 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: rgba(0,0,0,0.02);
+    }
+
+    /* Assignment-style notification layout */
+    .notifAssignment {
+      padding: 8px;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.04);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+
+    .notifRow {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .notifAvatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.04);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 44px;
+      color: rgba(0,0,0,0.6);
+    }
+
+    .notifContent {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .notifHeading {
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: rgba(0,0,0,0.9);
+    }
+
+    .notifMeta {
+      font-size: 12px;
+      color: rgba(0,0,0,0.6);
+      margin-top: 2px;
+    }
+
+    .metaValue {
+      font-weight: 700;
+      color: rgba(0,0,0,0.85);
+      margin-left: 6px;
+    }
+
+    /* Notification variants */
+    .notifItem {
+      &.new_assignment {
+        border-left: 4px solid #1890ff;
+      }
+
+      &.assignment_in_progress {
+        border-left: 4px solid #faad14;
+      }
+
+      &.assignment_completed {
+        border-left: 4px solid #52c41a;
+      }
+
+      &.assignment_cancelled {
+        border-left: 4px solid #ff4d4f;
+      }
+
+      &.notifRequest {
+        border-left: 4px solid #722ed1;
+      }
+    }
+
+    .notifTime {
+      font-size: 11px;
+      color: rgba(0,0,0,0.5);
+      margin-top: 4px;
+    }
+
+    .notifTitle {
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .notifBody {
+      font-size: 12px;
+      color: rgba(0,0,0,0.7);
+      margin-top: 4px;
+    }
+
+    .notifEmpty {
+      padding: 18px;
+      color: rgba(0,0,0,0.6);
+      text-align: center;
+    }
+
+    .clearBtn {
+      background: transparent;
+      border: none;
+      color: #7a32a3;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .userInfo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex: 0 0 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .avatar .initials {
+      font-size: 14px;
+      color: #fff;
+    }
+
+    .meta {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .userFullName {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .roleLabel {
+      font-size: 11px;
+      color: rgba(255,255,255,0.85);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+  }
+
+  hr {
+    height: 0;
+    border: 0.5px solid rgb(230, 227, 227);
+  }
+
+  .center {
+    padding-left: 10px;
+    overflow-y: auto; /* internal scroll when menu exceeds viewport */
+    flex: 1 1 auto;
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      .title {
+        font-size: 10px;
+        font-weight: bold;
+        color: white;
+        margin-top: 15px;
+        margin-bottom: 5px;
+      }
+
+      li {
+        display: flex;
+        align-items: center;
+        padding: 5px;
+        cursor: pointer;
+
+        .menuButton {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          width: 100%;
+          padding: 8px 12px;
+          border: none;
+          background: transparent;
+          text-align: left;
+          cursor: pointer;
+          color: inherit;
+          font: inherit;
+          /* smooth transition for icon, text and background */
+          transition: background-color 220ms ease, color 220ms ease, padding-left 220ms ease, transform 220ms ease;
+        }
+
+        .menuButton:focus {
+          outline: 2px solid rgba(0,0,0,0.12);
+          outline-offset: 2px;
+        }
+
+        &:hover {
+          background-color: #702963;
+        }
+
+        /* subtle focus/active state animation */
+        .menuButton:active {
+          transform: translateY(1px);
+        }
+
+        .icon {
+          font-size: 18px;
+          color: #f5d109;
+          transition: transform 220ms ease, color 220ms ease;
+        }
+
+        span {
+          font-size: 13px;
+          font-weight: 600;
+          color: white;
+          margin-left: 10px;
+          transition: color 220ms ease, opacity 220ms ease, transform 220ms ease;
+        }
+
+        /* small hover effect on the entire list item to nudge icon/text */
+        &:hover .icon,
+        &:hover span {
+          transform: translateX(4px);
+        }
+      } /* end li */
+
+      /* submenu is a sibling of li in the JSX structure, define it here */
+      .submenu {
+        list-style: none;
+        margin: 0 0 0 4px;
+        padding: 0 0 0 8px;
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-8px);
+        transition: max-height 260ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease, transform 260ms ease;
+      }
+
+      .submenu.open {
+        max-height: 480px; /* large enough to fit submenu items */
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* subitems live inside .submenu as buttons with classes "menuButton subitem" */
+      .submenu .subitem {
+        display: flex;
+        align-items: center;
+        padding: 6px 8px;
+        font-size: 10px;
+        font-weight: 600;
+        color: #fff; /* more visible by default */
+        background: transparent;
+        cursor: pointer;
+        margin-left: 8px; /* small left offset */
+        transition: color 200ms ease, background-color 200ms ease, transform 200ms ease;
+      }
+
+      .submenu .subitem:hover {
+        color: #f5d109;
+      }
+
+      .submenu .subicon {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 16px;
+        color: #f5d109;
+        font-size: 18px;
+        transition: color 200ms ease, transform 200ms ease;
+      }
+
+      /* Highlight the parent button icon/text when its button is expanded */
+      /* selector targets the button inside li */
+      li > .menuButton[aria-expanded="true"] .icon {
+        color: #ffffff;
+        transform: translateX(4px);
+      }
+
+      li > .menuButton[aria-expanded="true"] span {
+        color: #f5d109;
+      }
+
+      /* Ensure the subtree stays accessible to screen readers even when hidden */
+      .submenu[aria-hidden="true"] {
+        pointer-events: none;
+      }
+    } /* end ul */
+  } /* end .center */
+
+  .bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+    gap: 8px;
+
+    /* removed dark mode colorOptions per request */
+
+    .bottomActions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+
+      /* Style menu buttons in bottom area to match sidebar look (profile & logout) */
+      .menuButton {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+        width: 100%;
+        text-align: left;
+        transition: background-color 200ms ease, color 200ms ease, transform 120ms ease;
+      }
+
+      .menuButton .icon {
+        font-size: 18px;
+        color: #f5d109;
+        transition: color 160ms ease, transform 160ms ease;
+      }
+
+      .menuButton span {
+        font-size: 13px;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .menuButton:hover {
+        background-color: #702963;
+        color: #f5d109;
+      }
+
+      .menuButton:hover .icon {
+        color: #fff;
+        transform: translateX(4px);
+      }
+
+      .menuButton:active {
+        transform: translateY(1px);
+      }
+
+      /* Optional explicit profile block if you switch markup later */
+      .profile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.03);
+        cursor: pointer;
+        transition: background-color 180ms ease, transform 160ms ease;
+        width: 100%;
+
+        &:hover {
+          background: rgba(255,255,255,0.05);
+          transform: translateY(-2px);
+        }
+
+        .avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          overflow: hidden;
+          flex: 0 0 40px;
+          border: 2px solid rgba(0,0,0,0.08);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(255,255,255,0.02));
+        }
+
+        .info {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          min-width: 0;
+
+          .name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+          }
+
+          .role {
+            font-size: 11px;
+            color: rgba(255,255,255,0.78);
+            margin-top: 2px;
+          }
+        }
+      }
+    }
+  }
+}
