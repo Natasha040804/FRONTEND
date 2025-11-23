@@ -10,6 +10,7 @@ const AssignDeliveryCard = ({ personnel, onClose, onAssignmentComplete }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState([]);
   const { currentUser, branchStatus } = useAuth();
+  const [branchCapitals, setBranchCapitals] = useState({}); // branchId -> { current_capital }
 
   const [formData, setFormData] = useState({
     from_branch_id: '',
@@ -29,6 +30,13 @@ const AssignDeliveryCard = ({ personnel, onClose, onAssignmentComplete }) => {
     fetchBranches();
     fetchInventoryItems();
   }, []);
+
+  // Fetch branch capital data once branches loaded
+  useEffect(() => {
+    if (branches.length > 0) {
+      fetchBranchCapitals();
+    }
+  }, [branches]);
 
   // If user is Account Executive, default the "From" branch to their active branch and lock it
   useEffect(() => {
@@ -66,6 +74,33 @@ const AssignDeliveryCard = ({ personnel, onClose, onAssignmentComplete }) => {
       }
     } catch (error) {
       console.error('Error fetching branches:', error);
+    }
+  };
+
+  const fetchBranchCapitals = async () => {
+    try {
+      // Use existing backend endpoint: /api/capital/current-capital
+      const result = await ApiService.get('/api/capital/current-capital');
+      let rows = [];
+      if (Array.isArray(result)) {
+        rows = result;
+      } else if (result && result.success && Array.isArray(result.data)) {
+        rows = result.data;
+      }
+      if (!rows.length) return;
+      const map = rows.reduce((acc, row) => {
+        const id = String(row.BranchID || row.branch_id || row.id || '');
+        if (id) {
+          acc[id] = {
+            BranchID: id,
+            current_capital: row.current_capital ?? row.Current_Capital ?? row.capital ?? 0,
+          };
+        }
+        return acc;
+      }, {});
+      setBranchCapitals(map);
+    } catch (error) {
+      console.error('Error fetching branch capitals:', error);
     }
   };
 
@@ -118,6 +153,26 @@ const AssignDeliveryCard = ({ personnel, onClose, onAssignmentComplete }) => {
     if (branchId === 'office') return 'Main Office';
     const branch = branches.find(b => String(b.BranchID) === String(branchId));
     return branch ? branch.BranchName : `Branch ${branchId}`;
+  };
+
+  // Get current capital for a branch
+  const getBranchCapital = (branchId) => {
+    if (!branchId || branchId === 'office') return 0;
+    const row = branchCapitals[String(branchId)];
+    return row ? (row.current_capital ?? row.capital ?? 0) : 0;
+  };
+
+  // Predict new capital after assignment (for auditor Cash In only reduces from source)
+  const calculateNewCapital = () => {
+    if (!isAuditor) return null;
+    if (!formData.from_branch_id || formData.from_branch_id === 'office') return null;
+    const amt = parseFloat(formData.amount);
+    if (!amt || amt <= 0) return null;
+    if (formData.capital_or_balance === 'capital') {
+      const current = getBranchCapital(formData.from_branch_id);
+      return Math.max(0, current - amt);
+    }
+    return null; // Cash Out does not reduce capital here
   };
 
   // Filter items based on search term AND selected "From" branch
@@ -281,6 +336,19 @@ const AssignDeliveryCard = ({ personnel, onClose, onAssignmentComplete }) => {
                   ))}
                   <option value="office">Main Office</option>
                 </select>
+                {isAuditor && formData.from_branch_id && formData.from_branch_id !== 'office' && (
+                  <div className="branch-capital-info">
+                    <small>
+                      Current Capital: <strong>${getBranchCapital(formData.from_branch_id).toLocaleString()}</strong>
+                      {formData.capital_or_balance === 'capital' && formData.amount && calculateNewCapital() !== null && (
+                        <span>
+                          {' '}→ New Capital: <strong>${calculateNewCapital().toLocaleString()}</strong>
+                          {' '}(-${parseFloat(formData.amount).toLocaleString()})
+                        </span>
+                      )}
+                    </small>
+                  </div>
+                )}
               </div>
 
               <div className="route-arrow">→</div>
@@ -301,11 +369,22 @@ const AssignDeliveryCard = ({ personnel, onClose, onAssignmentComplete }) => {
                   ))}
                   <option value="office">Main Office</option>
                 </select>
+                {isAuditor && formData.to_branch_id && formData.to_branch_id !== 'office' && formData.capital_or_balance && formData.amount && (
+                  <div className="branch-capital-info">
+                    <small>
+                      Current Capital: <strong>${getBranchCapital(formData.to_branch_id).toLocaleString()}</strong>
+                      <span>
+                        {' '}→ After Completion: <strong>${(getBranchCapital(formData.to_branch_id) + parseFloat(formData.amount || 0)).toLocaleString()}</strong>
+                        {' '}(+${parseFloat(formData.amount || 0).toLocaleString()})
+                      </span>
+                    </small>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-            {/* Auditor-specific fields */}
+            {/* Auditor-specific capital / balance fields */}
             {isAuditor && (
               <div className="form-section-popup">
                 <div className="auditor-fields">
@@ -315,12 +394,12 @@ const AssignDeliveryCard = ({ personnel, onClose, onAssignmentComplete }) => {
                       <select
                         value={formData.capital_or_balance}
                         onChange={(e) => setFormData(prev => ({ ...prev, capital_or_balance: e.target.value }))}
-                        required={isAuditor}
+                        required
                         className="auditor-select"
                       >
                         <option value="">Select Option</option>
-                        <option value="capital">Capital</option>
-                        <option value="get_balance">Get Balance</option>
+                        <option value="capital">Cash In</option>
+                        <option value="get_balance">Cash Out</option>
                       </select>
                     </div>
                     <div className="auditor-field">
@@ -332,17 +411,17 @@ const AssignDeliveryCard = ({ personnel, onClose, onAssignmentComplete }) => {
                         placeholder="Enter amount"
                         value={formData.amount}
                         onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
-                        required={isAuditor}
+                        required
                         className="auditor-amount-input"
                       />
                     </div>
                   </div>
                   <div className="auditor-note">
                     <small>
-                      {formData.capital_or_balance === 'capital' 
-                        ? 'This will create a CAPITAL_DELIVERY assignment' 
-                        : formData.capital_or_balance === 'get_balance' 
-                          ? 'This will create a BALANCE_DELIVERY assignment' 
+                      {formData.capital_or_balance === 'capital'
+                        ? 'This will create a CAPITAL_DELIVERY assignment (Cash In)'
+                        : formData.capital_or_balance === 'get_balance'
+                          ? 'This will create a BALANCE_DELIVERY assignment (Cash Out)'
                           : 'Select an option to determine assignment type'}
                     </small>
                   </div>

@@ -116,12 +116,14 @@
   }
 }
 
-/* Smaller chart variant typically used beside Featured */
-.chart.chart--small {
+/* Dedicated BrandBarChart variant used beside Featured */
+.chart.chart--bar {
   flex: 1;
   /* Override base height clamp so we can match Featured card height */
   height: 100%; /* stretch to full row height */
-  min-height: 400px; /* baseline */
+  min-height: 420px; /* baseline */
+  aspect-ratio: auto;
+  max-height: none;
   /* Allow it to grow if sibling (Featured) is taller */
   align-self: stretch;
   display: flex;
@@ -129,13 +131,19 @@
 }
 
 /* Ensure the internal responsive container actually fills vertical space */
-.chart.chart--small > div { /* wrapper we added around ResponsiveContainer */
+.chart.chart--bar > div { /* wrapper we added around ResponsiveContainer */
   flex: 1 1 auto;
   display: flex;
   min-height: 0; /* allow child to shrink without overflow */
 }
 
-.chart.chart--small .recharts-responsive-container {
+.chart.chart--bar .recharts-responsive-container {
   flex: 1 1 auto;
+  min-height: 0;
+}
+
+.chart.chart--bar .barChartInner {
+  flex: 1 1 auto;
+  display: flex;
   min-height: 0;
 }

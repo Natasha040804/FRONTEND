@@ -194,7 +194,7 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '', onSubmitDropoff }) 
       <TableContainer 
         component={Paper} 
         className="table container"
-        style={{ maxHeight: '60vh', overflow: 'auto', '--col-count': 7, '--col-width': '180px', '--first-col-width': '220px' }}
+        style={{ maxHeight: '100vh', overflow: 'auto', '--col-count': 7, '--col-width': '180px', '--first-col-width': '220px' }}
       >
         <Table aria-label="assignments table">
           <TableHead>

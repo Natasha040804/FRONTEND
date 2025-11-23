@@ -1,7 +1,5 @@
 
 import "./widget.scss";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
@@ -9,11 +7,12 @@ import MonetizationOnOutlinedIcon from "@mui/icons-material/MonetizationOnOutlin
 import InventoryIcon from "@mui/icons-material/Inventory";
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/authContext';
 import { getApiBase } from '../../apiBase';
+import capitalService from '../../services/capitalService';
 
-const Widget = ({ type = "", count, diff = 0 }) => {
+const Widget = ({ type = "", count }) => {
   let data;
   const [value, setValue] = useState(typeof count === 'number' ? count : null);
   const [loading, setLoading] = useState(false);
@@ -27,6 +26,26 @@ const Widget = ({ type = "", count, diff = 0 }) => {
     return num.toLocaleString(undefined, { style: 'currency', currency: 'PHP', maximumFractionDigits: 2 });
   };
 
+  const branchId = useMemo(() => {
+    const pick = (source) => {
+      if (!source || typeof source !== 'object') return null;
+      const direct = source.branch_id || source.BranchID || source.branchId || source.BranchId || null;
+      if (direct) return String(direct);
+      const nested = source.branch || source.Branch || null;
+      if (nested) {
+        const nestedId = pick(nested);
+        if (nestedId) return String(nestedId);
+      }
+      const dataNode = source.data || source.payload || null;
+      if (dataNode) {
+        const dataId = pick(dataNode);
+        if (dataId) return String(dataId);
+      }
+      return null;
+    };
+    return pick(branchStatus) || pick(currentUser) || pick(currentUser?.user) || null;
+  }, [branchStatus, currentUser]);
+
   // Fetch branch items when widget types request branch totals
   useEffect(() => {
     let mounted = true;
@@ -34,7 +53,6 @@ const Widget = ({ type = "", count, diff = 0 }) => {
       if (!(type === 'Branch Total Item' || type === 'Branch Total Items Amount')) return;
       setLoading(true);
       try {
-        const branchId = (branchStatus && branchStatus.branch_id) || (currentUser && (currentUser.BranchID || currentUser.branchId)) || null;
         const params = branchId ? `?branchId=${branchId}` : '';
         const headers = await getAuthHeaders({ 'Content-Type': 'application/json' });
         const resp = await fetch(`${API_BASE}/api/items${params}`, { credentials: 'include', headers });
@@ -69,9 +87,35 @@ const Widget = ({ type = "", count, diff = 0 }) => {
     };
     fetchBranchTotals();
     return () => { mounted = false; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, currentUser, branchStatus]);
-  // diff supplied via props (default 0) so percentage badge hides unless meaningful
+  }, [type, branchId, getAuthHeaders, API_BASE]);
+
+  // Fetch branch current capital when needed
+  useEffect(() => {
+    let active = true;
+    const fetchCurrentCapital = async () => {
+      if (type !== 'Branch Current Capital') return;
+      if (!branchId) {
+        // Branch context not ready yet; wait for next update
+        return;
+      }
+      setLoading(true);
+      try {
+        const capital = await capitalService.getBranchCurrentCapital(branchId);
+        if (!active) return;
+        setValue(Number(capital) || 0);
+      } catch (err) {
+        console.error('Widget capital fetch error:', err);
+        if (active) setValue(0);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    fetchCurrentCapital();
+    return () => {
+      active = false;
+    };
+  }, [type, branchId]);
+  // diff removed from visual display per updated design
 
   switch (type) {
     case 'Branch Total Item':
@@ -84,6 +128,12 @@ const Widget = ({ type = "", count, diff = 0 }) => {
     case 'Branch Total Items Amount':
       data = {
         title: 'INVENTORY AMOUNT',
+        isMoney: true,
+      };
+      break;
+    case 'Branch Current Capital':
+      data = {
+        title: 'CURRENT CAPITAL',
         isMoney: true,
       };
       break;
@@ -344,12 +394,6 @@ const Widget = ({ type = "", count, diff = 0 }) => {
         <span className="link">{data.link}</span>
       </div>
       <div className="right">
-        {typeof diff === 'number' && diff !== 0 && (
-          <div className={`percentage ${diff > 0 ? 'positive' : 'negative'}`}>
-            {diff > 0 ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-            {Math.abs(diff)}%
-          </div>
-        )}
         {data.icon}
       </div>
     </div>

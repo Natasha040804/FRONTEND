@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-//import { getApiBase } from '../apiBase';
+import { getApiBase } from '../apiBase';
 
 export const AuthContext = createContext();
 // API base is computed dynamically via getApiBase()
@@ -14,9 +14,8 @@ export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
   const navigate = useNavigate();
 
-  // Ensure we have an access token; if not, try to mint one using refresh cookie
-  const API_BASE = 'http://localhost:5000';
-  console.log('🔍 Current API_BASE:', API_BASE);
+  // Dynamic base: localhost -> explicit backend, production -> same-origin
+  const API_BASE = getApiBase();
 
   const ensureAccessToken = async () => {
     if (accessToken) return accessToken;

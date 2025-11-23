@@ -31,6 +31,7 @@ import AESale from './components/dashboards/AESale';
 import AEREdeem from './components/dashboards/AEREdeem';
 import Message from './components/dashboards/Message';
 import Chat from './components/Message/message';
+import BranchCash from './components/dashboards/branchCapital';
 function App() {
   return (
     <BrowserRouter>
@@ -46,6 +47,14 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["admin"]}>
                     <Admindashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboards/AEdashboard"
+                element={
+                  <ProtectedRoute allowedRoles={["AccountExecutive"]}>
+                    <AEdashboard />
                   </ProtectedRoute>
                 }
               />
@@ -108,12 +117,11 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
-                path="/dashboards/AEdashboard"
+                path="/dashboards/branchCash"
                 element={
                   <ProtectedRoute allowedRoles={["AccountExecutive"]}>
-                    <AEdashboard />
+                    <BranchCash />
                   </ProtectedRoute>
                 }
               />

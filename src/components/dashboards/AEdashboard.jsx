@@ -16,13 +16,24 @@ const AEdashboard = () => {
       <Sidebar />
       <div className="dashboardContainer">
        <div className="widgets">
-          <Widget type="Branch Total Items Amount" />
-          <Widget type="Top Brand" />
-      
         </div>
-        <div className="charts">
-          <Featured />
-          <Chart title="Last 6 Months (Revenue)" height={340} />
+        <div className="charts chartsGrid">
+          <div className="gridDonut">
+            <Featured />
+          </div>
+          <div className="gridWidget">
+            <Widget type="Branch Total Items Amount" />
+          </div>
+          <div className="gridChart">
+          {(() => {
+            const now = new Date();
+            const monthName = now.toLocaleString('en-US', { month: 'long' });
+            const year = now.getFullYear();
+            return (
+          <Chart title={`Sales for ${monthName} ${year}`} height={330} />
+            );
+          })()}
+          </div>
         </div>
         
       </div>

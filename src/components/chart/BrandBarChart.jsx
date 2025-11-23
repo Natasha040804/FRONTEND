@@ -109,7 +109,7 @@ const BrandBarChart = ({ title = "Items per Branch", maxBars = 12, excludeStatus
 
   if (loading) {
     return (
-      <div className="chart chart--small">
+      <div className="chart chart--bar">
         <div className="title">{title}</div>
         <div className="chart-loading">Loading brand summary...</div>
       </div>
@@ -117,7 +117,7 @@ const BrandBarChart = ({ title = "Items per Branch", maxBars = 12, excludeStatus
   }
 
   return (
-    <div className="chart chart--small">
+    <div className="chart chart--bar">
       <div className="title">{title}</div>
       {error && (
         <div className="chart-error">
@@ -130,8 +130,8 @@ const BrandBarChart = ({ title = "Items per Branch", maxBars = 12, excludeStatus
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis 
             dataKey="branch" 
-            stroke="#6c757d" 
-            fontSize={12} 
+            stroke="#ffffff" 
+            tick={{ fill: '#ffffff', fontSize: 12 }}
             tickLine={false} 
             axisLine={false} 
             interval={0} 
@@ -139,7 +139,12 @@ const BrandBarChart = ({ title = "Items per Branch", maxBars = 12, excludeStatus
             dy={10} 
             height={60}
           />
-          <YAxis stroke="#6c757d" fontSize={12} tickLine={false} axisLine={false} />
+          <YAxis 
+            stroke="#ffffff" 
+            tick={{ fill: '#ffffff', fontSize: 12 }}
+            tickLine={false} 
+            axisLine={false} 
+          />
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="count" radius={[6, 6, 0, 0]}>
             {data.map((entry, index) => (

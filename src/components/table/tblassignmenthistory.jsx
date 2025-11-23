@@ -9,6 +9,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { getApiBase } from '../../apiBase';
 import { useAuth } from '../../context/authContext';
+import AssignmentDetailCard from './AssignmentDetailCard';
 
 // History table for delivery assignments: show all statuses and full schema columns
 const TableAssignmentHistory = ({ refreshKey = 0, searchTerm = '' }) => {
@@ -17,7 +18,21 @@ const TableAssignmentHistory = ({ refreshKey = 0, searchTerm = '' }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const API_BASE = getApiBase();
-  const { getAuthHeaders } = useAuth();
+  const { getAuthHeaders, currentUser, branchStatus } = useAuth();
+
+  const normalizedRole = ((currentUser?.role || currentUser?.Role || '') + '').toLowerCase();
+  const detectBranchId = () => {
+    const pick = (source) => {
+      if (!source || typeof source !== 'object') return null;
+      const direct = source.branchId || source.branch_id || source.BranchID || source.BranchId || null;
+      if (direct) return String(direct);
+      const nested = source.branch || source.Branch || source.data || null;
+      if (nested) return pick(nested);
+      return null;
+    };
+    return pick(branchStatus) || pick(currentUser) || pick(currentUser?.user) || null;
+  };
+  const aeBranchId = detectBranchId();
 
   const fmt = (v) => {
     if (!v) return '—';
@@ -50,14 +65,40 @@ const TableAssignmentHistory = ({ refreshKey = 0, searchTerm = '' }) => {
 
         // Prefer the public 'all' history endpoint to include PENDING as well
         let data;
-        const allRes = await fetch(`${API_BASE}/api/delivery-assignments/all`, {
-          credentials: 'include',
-          signal: controller.signal,
-        });
-        if (allRes.ok) {
-          data = await allRes.json();
-        } else {
-          // Try authenticated endpoint next (user-specific)
+        const isAdminLike = ['admin', 'auditor'].includes(normalizedRole);
+        const isAccountExecutive = normalizedRole === 'accountexecutive' || normalizedRole === 'ae';
+
+        if (isAdminLike) {
+          const allRes = await fetch(`${API_BASE}/api/delivery-assignments/all`, {
+            credentials: 'include',
+            signal: controller.signal,
+          });
+          if (allRes.ok) {
+            data = await allRes.json();
+          } else if (allRes.status !== 403) {
+            throw new Error(`Failed to load assignments: ${allRes.status}`);
+          }
+        }
+
+        if (!data && isAccountExecutive) {
+          if (!aeBranchId) {
+            setError('Branch session not available.');
+          } else {
+            const headers = await getAuthHeaders({ 'Content-Type': 'application/json' });
+            const res = await fetch(`${API_BASE}/api/delivery-assignments/branch/${aeBranchId}`, {
+              credentials: 'include',
+              headers,
+              signal: controller.signal,
+            });
+            if (res.ok) {
+              data = await res.json();
+            } else if (res.status !== 403) {
+              throw new Error(`Failed to load branch assignments: ${res.status}`);
+            }
+          }
+        }
+
+        if (!data) {
           const headers = await getAuthHeaders({ 'Content-Type': 'application/json' });
           const res = await fetch(`${API_BASE}/api/delivery-assignments`, {
             method: 'GET',
@@ -68,7 +109,6 @@ const TableAssignmentHistory = ({ refreshKey = 0, searchTerm = '' }) => {
           if (res.ok) {
             data = await res.json();
           } else {
-            // Fallback: combine public active + completed
             const [r1, r2] = await Promise.all([
               fetch(`${API_BASE}/api/delivery-assignments/active`, { credentials: 'include', signal: controller.signal }),
               fetch(`${API_BASE}/api/delivery-assignments/completed`, { credentials: 'include', signal: controller.signal }),
@@ -83,7 +123,13 @@ const TableAssignmentHistory = ({ refreshKey = 0, searchTerm = '' }) => {
         const branchMap = new Map((branchesArr || []).map(b => [b.BranchID, b.BranchName]));
         const userNameMap = new Map((usersArr || []).map(u => [u.Account_id, u.Fullname]));
 
-        const mapped = (Array.isArray(data) ? data : []).map((a, i) => {
+        // Normalize various response shapes: plain array, {success, data:[]}, {data:[]}
+        const normalize = (raw) => {
+          if (Array.isArray(raw)) return raw;
+          if (raw && Array.isArray(raw.data)) return raw.data;
+          return [];
+        };
+        const mapped = normalize(data).map((a, i) => {
           const itemsParsed = parseItems(a.items);
           // Prefer server-provided names, else map from ids
           const assignedToName = a.driver_name || a.assigned_to_name || (a.assigned_to != null ? userNameMap.get(a.assigned_to) : null) || null;
@@ -133,7 +179,7 @@ const TableAssignmentHistory = ({ refreshKey = 0, searchTerm = '' }) => {
     };
     load();
     return () => controller.abort();
-  }, [API_BASE, getAuthHeaders, refreshKey]);
+  }, [API_BASE, getAuthHeaders, refreshKey, normalizedRole, aeBranchId]);
 
   const filtered = useMemo(() => {
     if (!searchTerm) return rows;
@@ -144,91 +190,96 @@ const TableAssignmentHistory = ({ refreshKey = 0, searchTerm = '' }) => {
     );
   }, [rows, searchTerm]);
 
+  const [selected, setSelected] = useState(null);
+  const closeModal = () => setSelected(null);
+  const openModal = (row) => setSelected(row);
+
   if (loading) return <div className="loading">Loading assignments...</div>;
   if (error) return <div className="error">{error}</div>;
 
   return (
-    <TableContainer
-      component={Paper}
-      className="table container"
-      style={{
-        height: '75vh', 
-        maxHeight: '80vh',
-        overflow: 'auto',
-        '--col-count': 22,
-        '--col-width': '200px',
-        '--first-col-width': '160px'
-      }}
-    >
-      <Table aria-label="assignment history table" size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell className="tableCell">Assignment ID</TableCell>
-            <TableCell className="tableCell">Assigned To</TableCell>
-            <TableCell className="tableCell">Assigned By</TableCell>
-            <TableCell className="tableCell">Type</TableCell>
-            <TableCell className="tableCell">From Loc Type</TableCell>
-            <TableCell className="tableCell">From Branch</TableCell>
-            <TableCell className="tableCell">To Loc Type</TableCell>
-            <TableCell className="tableCell">To Branch</TableCell>
-            <TableCell className="tableCell">Items</TableCell>
-            <TableCell className="tableCell">Amount</TableCell>
-            <TableCell className="tableCell">Status</TableCell>
-            <TableCell className="tableCell">Notes</TableCell>
-            <TableCell className="tableCell">Created At</TableCell>
-            <TableCell className="tableCell">Updated At</TableCell>
-            <TableCell className="tableCell">Pickup Image</TableCell>
-            <TableCell className="tableCell">Pickup Verified At</TableCell>
-            <TableCell className="tableCell">Dropoff Image</TableCell>
-            <TableCell className="tableCell">Delivered At</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {filtered.length === 0 && (
+    <>
+      <TableContainer
+        component={Paper}
+        className="table container"
+        style={{
+          height: '75vh',
+          maxHeight: '80vh',
+          overflow: 'auto',
+          '--col-count': 22,
+          '--col-width': '200px',
+          '--first-col-width': '160px'
+        }}
+      >
+        <Table aria-label="assignment history table" size="small">
+          <TableHead>
             <TableRow>
-              <TableCell className="tableCell" colSpan={18} align="center">
-                No assignments found.
-              </TableCell>
+              <TableCell className="tableCell">Assignment ID</TableCell>
+              <TableCell className="tableCell">Assigned To</TableCell>
+              <TableCell className="tableCell">Assigned By</TableCell>
+              <TableCell className="tableCell">Type</TableCell>
+              <TableCell className="tableCell">From Branch</TableCell>
+              <TableCell className="tableCell">To Branch</TableCell>
+              <TableCell className="tableCell">Items</TableCell>
+              <TableCell className="tableCell">Amount</TableCell>
+              <TableCell className="tableCell">Status</TableCell>
+              <TableCell className="tableCell">Notes</TableCell>
+              <TableCell className="tableCell">Created At</TableCell>
+              <TableCell className="tableCell">Updated At</TableCell>
+              <TableCell className="tableCell">Delivered At</TableCell>
             </TableRow>
-          )}
-          {filtered.map(r => (
-            <TableRow key={r.assignment_id} className="clickable-row">
-              <TableCell className="tableCell">{r.assignment_id}</TableCell>
-              <TableCell className="tableCell">{r.assigned_to_name ?? r.assigned_to ?? '—'}</TableCell>
-              <TableCell className="tableCell">{r.assigned_by_name ?? r.assigned_by ?? '—'}</TableCell>
-              <TableCell className="tableCell">{r.assignment_type ?? '—'}</TableCell>
-              <TableCell className="tableCell">{r.from_location_type ?? '—'}</TableCell>
-              <TableCell className="tableCell">{r.from_branch_name ?? r.from_branch_id ?? '—'}</TableCell>
-              <TableCell className="tableCell">{r.to_location_type ?? '—'}</TableCell>
-              <TableCell className="tableCell">{r.to_branch_name ?? r.to_branch_id ?? '—'}</TableCell>
-              <TableCell className="tableCell">
-                {Array.isArray(r.items)
-                  ? `${r.items.length} item(s)`
-                  : (r.items ? String(r.items) : '—')}
-              </TableCell>
-              <TableCell className="tableCell">{r.amount != null ? Number(r.amount).toFixed(2) : '—'}</TableCell>
-              <TableCell className="tableCell">{r.status ?? '—'}</TableCell>
-              <TableCell className="tableCell">{r.notes ? String(r.notes).slice(0, 60) : '—'}</TableCell>
-              <TableCell className="tableCell">{fmt(r.created_at)}</TableCell>
-              <TableCell className="tableCell">{fmt(r.updated_at)}</TableCell>
-              <TableCell className="tableCell">
-                {r.item_image ? (
-                  <a href={`${API_BASE}/uploads/${r.item_image}`} target="_blank" rel="noreferrer">View</a>
-                ) : '—'}
-              </TableCell>
-              <TableCell className="tableCell">{fmt(r.pickup_verified_at)}</TableCell>
-              <TableCell className="tableCell">
-                {r.dropoff_image ? (
-                  <a href={`${API_BASE}/uploads/${r.dropoff_image}`} target="_blank" rel="noreferrer">View</a>
-                ) : '—'}
-              </TableCell>
-              <TableCell className="tableCell">{fmt(r.delivered_at)}</TableCell>
+          </TableHead>
+          <TableBody>
+            {filtered.length === 0 && (
+              <TableRow>
+                <TableCell className="tableCell" colSpan={18} align="center">
+                  No assignments found.
+                </TableCell>
+              </TableRow>
+            )}
+            {filtered.map(r => (
+              <TableRow
+                key={r.assignment_id}
+                className="clickable-row"
+                hover
+                style={{ cursor: 'pointer' }}
+                onClick={() => openModal(r)}
+              >
+                <TableCell className="tableCell">{r.assignment_id}</TableCell>
+                <TableCell className="tableCell">{r.assigned_to_name ?? r.assigned_to ?? '—'}</TableCell>
+                <TableCell className="tableCell">{r.assigned_by_name ?? r.assigned_by ?? '—'}</TableCell>
+                <TableCell className="tableCell">{r.assignment_type ?? '—'}</TableCell>
+  
+                <TableCell className="tableCell">{r.from_branch_name ?? r.from_branch_id ?? '—'}</TableCell>
               
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                <TableCell className="tableCell">{r.to_branch_name ?? r.to_branch_id ?? '—'}</TableCell>
+                <TableCell className="tableCell">
+                  {Array.isArray(r.items)
+                    ? `${r.items.length} item(s)`
+                    : (r.items ? String(r.items) : '—')}
+                </TableCell>
+                <TableCell className="tableCell">{r.amount != null ? Number(r.amount).toFixed(2) : '—'}</TableCell>
+                <TableCell className="tableCell">{r.status ?? '—'}</TableCell>
+                <TableCell className="tableCell">{r.notes ? String(r.notes).slice(0, 60) : '—'}</TableCell>
+                <TableCell className="tableCell">{fmt(r.created_at)}</TableCell>
+                <TableCell className="tableCell">{fmt(r.updated_at)}</TableCell>
+
+                <TableCell className="tableCell">{fmt(r.delivered_at)}</TableCell>
+
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {selected && (
+        <AssignmentDetailCard
+          assignment={selected}
+          onClose={closeModal}
+          apiBase={API_BASE}
+          formatDate={fmt}
+        />
+      )}
+    </>
   );
 };
 

@@ -7,23 +7,23 @@ import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
-import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import PersonIcon from '@mui/icons-material/Person';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import SellIcon from '@mui/icons-material/Sell';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { Link } from "react-router-dom";
 import { DarkModeContext } from "../../context/darkModeContext";
 import { useContext, useState } from "react";
 import { useAuth } from '../../context/authContext';
-import Notifications from './Notifications';
 
 const Sidebar = () => {
   const { dispatch } = useContext(DarkModeContext);
   const { logout, user } = useAuth();
   // only one section open at a time: 'inventory' | 'delivery' | null
   const [openSection, setOpenSection] = useState(null);
+  const role = user && user.role ? user.role.toLowerCase() : '';
   
   // Function to determine dashboard route based on user role
   const getDashboardRoute = () => {
@@ -48,7 +48,7 @@ const Sidebar = () => {
             <span className="logo">MZE CELLULAR</span>
           </Link>
 
-          <Notifications />
+          
         </div>
 
         <div className="userInfo">
@@ -82,6 +82,16 @@ const Sidebar = () => {
               </button>
             </Link>
           </li>
+          {['admin','auditor','accountexecutive'].includes(role) && (
+            <li>
+              <Link to="/messages" style={{ textDecoration: "none" }}>
+                <button className="menuButton" type="button">
+                  <ChatBubbleOutlineIcon className="icon" />
+                  <span>Messages</span>
+                </button>
+              </Link>
+            </li>
+          )}
          
           <li>
             
@@ -98,7 +108,6 @@ const Sidebar = () => {
           <ul className={`submenu ${openSection === 'inventory' ? 'open' : ''}`} aria-hidden={openSection !== 'inventory'}>
             {
               (() => {
-                const role = user && user.role ? user.role.toLowerCase() : '';
                 const showItems = role === 'admin' || role === 'accountexecutive' || role === 'auditor';
                 if (!showItems) return null;
                 let itemsRoute = '/inventory-items';
@@ -117,7 +126,6 @@ const Sidebar = () => {
               })()
             }
             {(() => {
-              const role = user && user.role ? user.role.toLowerCase() : '';
               if (role !== 'accountexecutive') return null;
               return (
                 <>
@@ -147,9 +155,8 @@ const Sidebar = () => {
             })()}
             {
               (() => {
-                const role = user && user.role ? user.role.toLowerCase() : '';
                 if (role !== 'accountexecutive' && role !== 'auditor') return null;
-                const capitalRoute = role === 'accountexecutive' ? '/branch-capital-inv' : '/capital-inventory';
+                const capitalRoute = role === 'accountexecutive' ? '/dashboards/branchCash' : '/capital-inventory';
                 return (
                   <li>
                     <Link to={capitalRoute} style={{ textDecoration: "none" }}>
@@ -161,22 +168,7 @@ const Sidebar = () => {
                 );
               })()
             }
-            <li>
-              {(() => {
-                const role = user && user.role ? user.role.toLowerCase() : '';
-                let activityRoute = '/inventory-activity';
-                if (role === 'admin') activityRoute = '/activity/admin';
-                else if (role === 'auditor') activityRoute = '/activity/auditor';
-                else if (role === 'accountexecutive') activityRoute = '/activity/branch';
-                return (
-                  <Link to={activityRoute} style={{ textDecoration: "none" }}>
-                    <button className="menuButton subitem" type="button">
-                      <ContentPasteIcon className="subicon" aria-hidden="true"/>Transactions
-                    </button>
-                  </Link>
-                );
-              })()}
-            </li>
+            
           </ul>
           <li>
             <button

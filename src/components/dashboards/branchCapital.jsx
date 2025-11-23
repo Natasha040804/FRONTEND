@@ -3,11 +3,9 @@ import Sidebar from "../../components/sidebar/sidebar";
 import "./home.scss";
 import Widget from "../../components/widget/admininventorywidgets";
 import Table from "../../components/table/Table"; 
-import SearchBar from "../../components/search/SearchBar";
 
-const BranchBalance = () => {
+const BranchCash = () => {
   const [refreshKey, ] = React.useState(0);
-  const [searchTerm, setSearchTerm] = React.useState('');
 
 
   return (
@@ -17,24 +15,16 @@ const BranchBalance = () => {
         
         <div className="widgets">
           <Widget type="Branch Total Item" />
-          <Widget type="Branch Total Items Amount" />
+          <Widget type="Branch Current Capital" />
         </div>
         
         <div className="listContainer">
-          <div className="inventoryHeaderRow">
-            <h2 className="listTitle">Branch Inventory</h2>
-            <SearchBar
-              value={searchTerm}
-              onChange={setSearchTerm}
-              placeholder="Search branch inventory..."
-            />
-          </div>
           
-          <Table refreshKey={refreshKey} searchTerm={searchTerm} />
+          <Table refreshKey={refreshKey} />
         </div>
       </div>
     </div>
   );
 };
 
-export default BranchBalance;
+export default BranchCash;

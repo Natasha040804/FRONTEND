@@ -1,6 +1,6 @@
 import Sidebar from "../sidebar/sidebar";
 import "./home.scss";
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import ApprovalCard from "../card/ApprovalCard";
 
 const UserApproval = () => {
@@ -12,7 +12,7 @@ const UserApproval = () => {
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Load data with better error handling
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -47,21 +47,34 @@ const UserApproval = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Auto-refresh effect
   useEffect(() => {
     loadData();
+  }, [loadData]);
 
+  const loadingRef = useRef(loading);
+  const busyRef = useRef(busyId);
+
+  useEffect(() => {
+    loadingRef.current = loading;
+  }, [loading]);
+
+  useEffect(() => {
+    busyRef.current = busyId;
+  }, [busyId]);
+
+  useEffect(() => {
+    if (!autoRefresh) return undefined;
     const interval = setInterval(() => {
-      if (autoRefresh && !loading && !busyId) {
+      if (!loadingRef.current && !busyRef.current) {
         console.log('Auto-refreshing data...');
         loadData();
       }
     }, 30000);
-
     return () => clearInterval(interval);
-  }, [autoRefresh, loading, busyId]);
+  }, [autoRefresh, loadData]);
 
   // Handle approve with better error handling
   const handleApprove = async (id, durationHours = 12) => {

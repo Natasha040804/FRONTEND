@@ -34,7 +34,6 @@ const Admindashboard = () => {
       <div className="dashboardContainer">
         <div className="widgets">
           <Widget type="Total Inventory Amount" amount={dashboardData.totalInventory.amount} diff={dashboardData.totalInventory.diff} link="View all inventory" />
-          <Widget type="Items Sold Today" amount={dashboardData.itemsSoldToday.count} diff={dashboardData.itemsSoldToday.diff} link="View today's sales" />
           <Widget type="Total Earnings" amount={dashboardData.totalEarnings.amount} diff={dashboardData.totalEarnings.diff} link="View earnings report" />
           <Widget type="Pending Deliveries" amount={dashboardData.pendingDeliveries.count} diff={dashboardData.pendingDeliveries.diff} link="Track deliveries" />
         </div>

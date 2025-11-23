@@ -48,6 +48,33 @@
       z-index: 1; /* keep stacking simple; first row appears above background */
     }
 
+    /* AE grid layout: donut left, widget + chart right */
+    .chartsGrid {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) minmax(400px, 2fr);
+      grid-template-rows: auto auto;
+      grid-template-areas:
+        "donut widget"
+        "donut chart";
+      gap: 20px;
+      align-items: stretch;
+    }
+    .chartsGrid .gridDonut { grid-area: donut; display: flex; }
+    .chartsGrid .gridWidget { grid-area: widget; }
+    .chartsGrid .gridChart { grid-area: chart; }
+    .chartsGrid .gridDonut > *,
+    .chartsGrid .gridWidget > *,
+    .chartsGrid .gridChart > * { width: 100%; }
+    .chartsGrid .gridChart .chart { min-height: 360px; }
+
+    @media (max-width: 1024px) {
+      .chartsGrid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        grid-template-areas: "donut" "widget" "chart";
+      }
+    }
+
     /* Charts row holding the donut (Featured) and the bar chart side by side */
     .chartsRow {
       display: flex;
@@ -63,16 +90,12 @@
       .featured,
       .chart {
         flex: 1 1 300px; /* grow, shrink, basis */
-        min-height: 400px;
+        min-height: 420px;
         box-sizing: border-box;
-      }
-
-      /* Ensure inner chart layout doesn't collapse */
-      .chart {
         display: flex;
         flex-direction: column;
-
-        .title { flex-shrink: 0; }
+        height: 100%;
+        align-self: stretch;
       }
     }
 

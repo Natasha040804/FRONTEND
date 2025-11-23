@@ -340,7 +340,7 @@ const List = ({ refreshKey = 0, onUpdateItem, actionButtonText = "Update", detai
                 </TableCell>
                 <TableCell className="tableCell clickable">{item.Brand}</TableCell>
                 <TableCell className="tableCell clickable">{item.Model}</TableCell>
-                <TableCell className="tableCell clickable">{item.ProcessorSpecs}</TableCell>
+                <TableCell className="tableCell clickable">{item.Processor}</TableCell>
                 <TableCell className="tableCell clickable">{item.WifiAddress}</TableCell>
                 <TableCell className="tableCell clickable">{item.Amount ? `₱${item.Amount}` : 'N/A'}</TableCell>
                 <TableCell className="tableCell clickable">{item.InterestRate ? `${item.InterestRate}%` : 'N/A'}</TableCell>

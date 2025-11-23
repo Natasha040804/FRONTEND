@@ -141,7 +141,6 @@ const Featured = () => {
             </div>
           </div>
         )}
-        <p className="amount">{totalSold.toLocaleString()} </p>
         <div className="summary">
           <div className="item">
             <div className="itemTitle">Top Brand</div>

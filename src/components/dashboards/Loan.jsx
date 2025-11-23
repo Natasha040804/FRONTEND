@@ -62,14 +62,29 @@ export default function Loan() {
   // For DB payload (with seconds, space separator)
   const fmtDb = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
 
+  const CLASSIFICATION_DAYS = {
+    'High - End': 15,
+    'Non - High end': 15,
+    'Android Wear': 15,
+    'Apple Watch': 15,
+    'Digicam': 15,
+    'DSLR': 15,
+    'Ipod': 15,
+    'Laptop': 15,
+    'LED/LCD TV': 15,
+    'Low End': 15,
+    'Low - End No WiFi': 15,
+    'Phone': 15,
+    'PSP': 15,
+    'Tablet': 15,
+    'Videocam': 15,
+  };
+
   const computeDue = (loanDateStr, classification) => {
     if (!loanDateStr || !classification) return "";
-    const base = new Date(loanDateStr);
-    let days = 0;
-    if (classification === 'High - End') days = 26;
-    if (classification === 'Non - High end') days = 31;
+    const days = CLASSIFICATION_DAYS[classification] || 0;
     if (!days) return "";
-    const d = new Date(base);
+    const d = new Date(loanDateStr);
     d.setDate(d.getDate() + days);
     return fmtLocal(d);
   };
@@ -186,8 +201,8 @@ export default function Loan() {
           </span>
         </div>
 
-        <div className="card" style={{ padding: 24, marginTop: 16 }}>
-          <h2 style={{ marginBottom: 16 }}>Loan Form</h2>
+        <div className="card" style={{ color: 'white', padding: 24, marginTop: 16 }}>
+          <h2 style={{ color: '#334155', marginBottom: 16 }}>Loan Form</h2>
           {!approved && (
             <div style={{ color: '#b00020', background: '#ffebee', padding: 12, borderRadius: 4, marginBottom: 16 }}>
               You need an approved branch session before adding items.
@@ -229,7 +244,7 @@ export default function Loan() {
                   value={form.Classification}
                   onChange={onChange}
                   required
-                  style={{ width: '100%', padding: '10px', borderRadius: 4, border: '1px solid #ccc' }}
+                  style={{ width: '100%', padding: '10px', borderRadius: 4, border: '1px solid #ccc', backgroundColor: '#fff', color: '#000' }}
                 >
                   <option value="">Select Classification</option>
                   <option value="High - End">High - End</option>
@@ -291,7 +306,7 @@ export default function Loan() {
                   value={form.Brand}
                   onChange={onChange}
                   required
-                  style={{ width: '100%', padding: '10px', borderRadius: 4, border: '1px solid #ccc' }}
+                  style={{ width: '100%', padding: '10px', borderRadius: 4, border: '1px solid #ccc', backgroundColor: '#fff', color: '#000' }}
                 >
                   <option value="">Select Brand</option>
                   <option value="Acer">Acer</option>

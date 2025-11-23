@@ -157,24 +157,13 @@ const DeliveryRequests = () => {
           <Widget type="Logistics Personnel" count={stats.total} />
           <Widget type="Standby" count={stats.standby} />
           <Widget type="Assigned" count={stats.assigned} />
-          <Widget type="Pending Deliveries" count={0} />
+
         </div>
 
   <div className="listContainer logisticsContainer">
           <div className="listTitle" style={{ color: 'white' }}>
             Logistics Personnel  
-            {currentUser && (
-              <span className="role-badge" style={{ 
-                marginLeft: '10px', 
-                fontSize: '0.8rem',
-                color: '#333',
-                background: '#e2e8f0',
-                padding: '2px 8px',
-                borderRadius: '4px'
-              }}>
-                Viewing as: {(currentUser.role || currentUser.Role || '').toString().toLowerCase() || 'unknown'}
-              </span>
-            )}
+            
           </div>
           {error && (
             <div className="warning-message">
@@ -188,13 +177,7 @@ const DeliveryRequests = () => {
             <span>Standby ({stats.standby})</span>
             <span className="dot assigned" style={{ marginLeft: 16 }}></span>
             <span>Assigned ({stats.assigned})</span>
-            <button 
-              onClick={fetchLogisticsPersonnel} 
-              className="refresh-btn"
-              style={{ marginLeft: 'auto' }}
-            >
-              🔄 Refresh
-            </button>
+            
           </div>
           {personnel.length === 0 && !loading ? (
             <div className="no-personnel">{error ? 'Failed to load logistics personnel' : 'No logistics personnel found in the database.'}</div>

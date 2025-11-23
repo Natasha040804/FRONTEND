@@ -3,22 +3,18 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import MonetizationOnOutlinedIcon from "@mui/icons-material/MonetizationOnOutlined";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-
-const Widget = ({ type, amount, diff, link, count }) => {
+import InventoryIcon from "@mui/icons-material/Inventory";
+const Widget = ({ type, amount, link, count }) => {
   let data;
 
   // temporary defaults if specific values aren't provided per type
   const fallbackAmount = 100;
-  const fallbackDiff = 20;
 
   switch (type) {
     case "user":
       data = {
         title: "user",
         isMoney: false,
-        link: "See all users",
         icon: (
           <PersonOutlinedIcon
             className="icon"
@@ -31,7 +27,6 @@ const Widget = ({ type, amount, diff, link, count }) => {
       data = {
         title: "ORDERS",
         isMoney: false,
-        link: "View all orders",
         icon: (
           <ShoppingCartOutlinedIcon
             className="icon"
@@ -44,7 +39,7 @@ const Widget = ({ type, amount, diff, link, count }) => {
       data = {
         title: "EARNINGS",
         isMoney: true,
-        link: "View net earnings",
+
         icon: (
           <MonetizationOnOutlinedIcon
             className="icon"
@@ -57,7 +52,7 @@ const Widget = ({ type, amount, diff, link, count }) => {
       data = {
         title: "BALANCE",
         isMoney: true,
-        link: "See details",
+    
         icon: (
           <AccountBalanceWalletOutlinedIcon
             className="icon"
@@ -92,7 +87,7 @@ const Widget = ({ type, amount, diff, link, count }) => {
         isMoney: true,
         amount: "₱15.23M",
         diff: 18,
-        link: "View sales",
+        
         icon: <span className="icon" style={{ backgroundColor: "rgba(180,83,9,0.15)", color: "#b45309" }}>🛒</span>,
       };
       break;
@@ -112,7 +107,7 @@ const Widget = ({ type, amount, diff, link, count }) => {
       data = {
         title: "BRANCH VAULT COUNT",
         isMoney: false,
-        link: "View vault items",
+
         icon: (
           <AccountBalanceWalletOutlinedIcon
             className="icon"
@@ -125,11 +120,35 @@ const Widget = ({ type, amount, diff, link, count }) => {
       data = {
         title: "VAULT TOTAL AMOUNT",
         isMoney: true,
-        link: "View vault totals",
+  
         icon: (
           <AccountBalanceWalletOutlinedIcon
             className="icon"
             style={{ backgroundColor: "rgba(16,185,129,0.15)", color: "#10b981" }}
+          />
+        ),
+      };
+      break;
+    case "Branch Display Count":
+      data = {
+        title: "DISPLAY COUNT",
+        isMoney: false,
+        icon: (
+          <InventoryIcon
+            className="icon"
+            style={{ backgroundColor: "rgba(168,85,247,0.15)", color: "#a855f7" }}
+          />
+        ),
+      };
+      break;
+    case "Branch Display Amount":
+      data = {
+        title: "DISPLAY AMOUNT",
+        isMoney: true,
+        icon: (
+          <AccountBalanceWalletOutlinedIcon
+            className="icon"
+            style={{ backgroundColor: "rgba(251,191,36,0.15)", color: "#d97706" }}
           />
         ),
       };
@@ -250,12 +269,6 @@ const Widget = ({ type, amount, diff, link, count }) => {
 
   // External amount overrides internal defaults; if count provided use that when amount undefined
   const effectiveAmount = amount !== undefined ? amount : (count !== undefined ? count : data.amount !== undefined ? data.amount : fallbackAmount);
-  const effectiveDiff = diff !== undefined ? diff : (data.diff !== undefined ? data.diff : fallbackDiff);
-
-  // Normalize diff display: hide when zero or not a number
-  const numericDiff = typeof effectiveDiff === 'number' && Number.isFinite(effectiveDiff) ? effectiveDiff : null;
-  const showDiff = numericDiff !== null && Math.abs(numericDiff) > 0;
-  const isPositive = showDiff ? numericDiff > 0 : null;
 
 
   return (
@@ -274,12 +287,6 @@ const Widget = ({ type, amount, diff, link, count }) => {
         {data.link ? <span className="link">{data.link}</span> : null}
       </div>
       <div className="right">
-        {showDiff && (
-          <span className={`percentage ${isPositive ? 'positive' : 'negative'}`}>
-            {isPositive ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-            {Math.abs(numericDiff)}%
-          </span>
-        )}
         {data.icon}
       </div>
     </div>

@@ -257,7 +257,7 @@
 }
 
 .detail-card {
-  background: linear-gradient(135deg, #910b91 0%, #bf40bf 100%);
+  background: #f3d7f3;
   border-radius: 16px;
   padding: 0;
   width: 100vh;
@@ -291,7 +291,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  background:#910b91;
+  background:#bf40bf  ;
 }
 
 .detail-card__title {
@@ -301,7 +301,7 @@
 .detail-card__item-id {
   font-size: 12px;
   font-weight: 600;
-  color: #f3f3f5;
+  color: #c54aeb;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
@@ -453,7 +453,7 @@
 }
 .detail-card__footer {
   padding: 20px 24px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #e6c1e6;
   background: rgba(248, 250, 252, 0.8);
   display: flex;
   justify-content: center;

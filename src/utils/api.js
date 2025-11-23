@@ -1,21 +1,15 @@
 // utils/api.js - simple API service with auth headers and 401 handling
+import { getApiBase } from '../apiBase';
+
 class ApiService {
   constructor() {
-    // Prefer env override first (build-time)
-    const env = process.env.REACT_APP_API_BASE || process.env.REACT_APP_API_URL;
-    if (env) {
-      this.baseURL = env.replace(/\/$/, '');
-    } else {
-      const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-      this.baseURL = (hostname === 'localhost' || hostname === '127.0.0.1') ? 'http://localhost:5000' : '';
-    }
-    if (typeof window !== 'undefined') {
-      // Debug one-time log (comment out if noisy)
-      if (!window.__apiBaseLogged) {
-        console.log('[ApiService] baseURL resolved to:', this.baseURL || '(same-origin)');
-        window.__apiBaseLogged = true;
+    this.baseURL = getApiBase();
+    try {
+      // One-time debug to confirm effective base
+      if (typeof window !== 'undefined') {
+        console.log('[ApiService] baseURL =', this.baseURL || '(relative)');
       }
-    }
+    } catch (_) {}
   }
 
   getToken() {
@@ -54,7 +48,8 @@ class ApiService {
   }
 
   async get(url) {
-    const response = await fetch(`${this.baseURL}${url}`, {
+    const full = `${this.baseURL}${url.startsWith('/') ? url : '/' + url}`;
+    const response = await fetch(full, {
       method: 'GET',
       headers: await this.getAuthHeaders(),
       credentials: 'include',
@@ -63,7 +58,8 @@ class ApiService {
   }
 
   async post(url, data) {
-    const response = await fetch(`${this.baseURL}${url}`, {
+    const full = `${this.baseURL}${url.startsWith('/') ? url : '/' + url}`;
+    const response = await fetch(full, {
       method: 'POST',
       headers: await this.getAuthHeaders(),
       credentials: 'include',
@@ -73,7 +69,8 @@ class ApiService {
   }
 
   async put(url, data) {
-    const response = await fetch(`${this.baseURL}${url}`, {
+    const full = `${this.baseURL}${url.startsWith('/') ? url : '/' + url}`;
+    const response = await fetch(full, {
       method: 'PUT',
       headers: await this.getAuthHeaders(),
       credentials: 'include',
@@ -83,7 +80,8 @@ class ApiService {
   }
 
   async delete(url) {
-    const response = await fetch(`${this.baseURL}${url}`, {
+    const full = `${this.baseURL}${url.startsWith('/') ? url : '/' + url}`;
+    const response = await fetch(full, {
       method: 'DELETE',
       headers: await this.getAuthHeaders(),
       credentials: 'include',

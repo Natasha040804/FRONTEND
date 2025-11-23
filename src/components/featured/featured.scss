@@ -1,5 +1,9 @@
 .featured {
   flex: 1; /* match bar chart width in chartsRow */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 400px;
   -webkit-box-shadow: 2px 4px 10px 1px rgba(0, 0, 0, 0.47);
   box-shadow: 2px 4px 10px 1px rgba(201, 201, 201, 0.47);
   padding: 20px;
@@ -48,6 +52,8 @@
     align-items: center;
     justify-content: center;
     gap: 20px;
+    flex: 1; /* fill remaining height so card matches sibling chart */
+    width: 100%;
 
     .chartContainer {
       width: 100%;
@@ -144,16 +150,7 @@
       letter-spacing: 0.5px;
     }
 
-    .amount {
-      font-size: 32px;
-      font-weight: 800;
-      color: #f5d109;
-      margin: 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+    /* Removed duplicate amount display under chart */
 
     .desc {
       font-weight: 400;

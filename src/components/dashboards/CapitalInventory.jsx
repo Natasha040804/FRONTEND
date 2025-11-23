@@ -12,7 +12,7 @@ const CapitalInventory = () => {
     totalInventory: { amount: 0, diff: 0 },
     totalCapital: { amount: 0, diff: 0 },
     totalBalance: { amount: 0, diff: 0 },
-    totalRedeems: { amount: 0, diff: 0 },
+  
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -73,11 +73,7 @@ const CapitalInventory = () => {
                 amount={widgetData.totalBalance.amount}
                 diff={widgetData.totalBalance.diff}
               />
-              <Widget 
-                type="Total Redeems" 
-                amount={widgetData.totalRedeems.amount}
-                diff={widgetData.totalRedeems.diff}
-              />
+             
             </>
           )}
         </div>
