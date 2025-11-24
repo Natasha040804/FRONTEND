@@ -1,10 +1,12 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import './activitylogs.scss';
+import { getApiBase } from '../../apiBase';
 
 export default function ActivityLogsTable({ branchId, limit = 50 }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const API_BASE = getApiBase();
 
   const headers = useMemo(() => [
     { key: 'id', label: 'TRNSCTNID' },
@@ -26,7 +28,7 @@ export default function ActivityLogsTable({ branchId, limit = 50 }) {
         const params = new URLSearchParams();
         if (branchId) params.append('branchId', String(branchId));
         if (limit) params.append('limit', String(limit));
-        const res = await fetch(`/api/activity/logs?${params.toString()}`, {
+        const res = await fetch(`${API_BASE}/api/activity/logs?${params.toString()}`, {
           credentials: 'include',
           signal: controller.signal,
         });
