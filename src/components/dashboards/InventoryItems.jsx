@@ -8,6 +8,7 @@ import Widget from "../../components/widget/Widgets";
 import { useEffect } from 'react';
 import { featuredService } from '../../services/featuredService';
 import { useDashboard } from '../../context/DashboardContext';
+import { useAuth } from '../../context/authContext';
 const InventoryItems = () => {
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -65,6 +66,8 @@ const InventoryItems = () => {
   }, [refreshKey]);
 
   const { dashboardData } = useDashboard();
+  const { currentUser } = useAuth();
+  const isAdmin = ((currentUser?.role || currentUser?.Role || '').toString().toLowerCase() === 'admin');
 
   return (
     <div className="dashboard">
@@ -90,6 +93,7 @@ const InventoryItems = () => {
             onUpdateItem={handleItemClick}
             detailView="adminForm"
             searchTerm={searchTerm}
+            userIsAdmin={isAdmin}
           />
         </div>
         
