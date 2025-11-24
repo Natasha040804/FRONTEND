@@ -110,7 +110,7 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '' }) => {
       <TableContainer 
         component={Paper} 
         className="table container"
-        style={{ maxHeight: '100vh', overflow: 'auto', '--col-count': 7, '--col-width': '180px', '--first-col-width': '220px' }}
+        style={{ maxHeight: '100vh', overflow: 'auto', '--col-count': 6, '--col-width': '180px', '--first-col-width': '220px' }}
       >
         <Table aria-label="assignments table">
           <TableHead>
@@ -121,32 +121,30 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '' }) => {
               <TableCell className="tableCell">Assignment Type</TableCell>
               <TableCell className="tableCell">Pick Up</TableCell>
               <TableCell className="tableCell">Drop Off</TableCell>
-              <TableCell className="tableCell">View Location</TableCell>
         
             </TableRow>
           </TableHead>
           <TableBody>
             {filtered.map(a => (
-              <TableRow key={a.assignmentId} className="clickable-row">
+              <TableRow
+                key={a.assignmentId}
+                className="clickable-row"
+                onClick={() => setViewing(a)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setViewing(a);
+                  }
+                }}
+              >
                 <TableCell className="tableCell clickable">{a.assignmentId}</TableCell>
                 <TableCell className="tableCell clickable">{a.assignedBy}</TableCell>
                 <TableCell className="tableCell clickable">{a.assignedTo}</TableCell>
                 <TableCell className="tableCell clickable">{a.assignmentType || '—'}</TableCell>
                 <TableCell className="tableCell clickable">{a.fromBranchName || a.fromBranchId || '—'}</TableCell>
                 <TableCell className="tableCell clickable">{a.toBranchName || '—'}</TableCell>
-                <TableCell className="tableCell">
-                  <button
-                    type="button"
-                    className="btn btn--primary"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setViewing(a);
-                    }}
-                  >
-                    View Location
-                  </button>
-                </TableCell>
-               
               </TableRow>
             ))}
           </TableBody>
