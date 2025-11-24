@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import '../../components/sidebar/navbar.scss';
+import { getApiBase } from '../../apiBase';
+import { useAuth } from '../../context/authContext';
 
 const initial = {
   username: '',
@@ -38,6 +40,8 @@ const AddUserModal = ({ open = true, onClose = () => {}, onAdded = () => {} }) =
     }
   };
 
+  const { getAuthHeaders } = useAuth();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -52,6 +56,11 @@ const AddUserModal = ({ open = true, onClose = () => {}, onAdded = () => {} }) =
     }
     setLoading(true);
     try {
+      const API_BASE = getApiBase();
+      if (!API_BASE) {
+        setError('API base URL not configured.');
+        return;
+      }
       let res;
       // If an image is attached, send multipart/form-data
       if (imageFile) {
@@ -60,23 +69,30 @@ const AddUserModal = ({ open = true, onClose = () => {}, onAdded = () => {} }) =
           if (form[k] !== undefined && form[k] !== null) fd.append(k, form[k]);
         });
         fd.append('image', imageFile);
-
-        res = await fetch('/api/users', {
+        const headers = await getAuthHeaders(); // auth headers only; browser sets multipart boundary
+        res = await fetch(`${API_BASE}/api/users`, {
           method: 'POST',
           body: fd,
-          credentials: 'include'
+          credentials: 'include',
+          headers,
         });
       } else {
-        res = await fetch('/api/users', {
+        const headers = await getAuthHeaders({ 'Content-Type': 'application/json', Accept: 'application/json' });
+        res = await fetch(`${API_BASE}/api/users`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(form),
           credentials: 'include'
         });
       }
+      const ct = res.headers.get('content-type') || '';
       if (!res.ok) {
         const txt = await res.text();
-        throw new Error(`Server ${res.status}: ${txt}`);
+        throw new Error(`Server ${res.status}: ${txt.slice(0,200)}`);
+      }
+      if (ct && !ct.includes('application/json')) {
+        const txt = await res.text();
+        throw new Error(`Unexpected non-JSON response (content-type: ${ct}) body: ${txt.slice(0,200)}`);
       }
       const created = await res.json();
       onAdded(created);
