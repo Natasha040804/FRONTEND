@@ -56,7 +56,7 @@ const List = ({ refreshKey = 0, onUpdateItem, actionButtonText = "Update", detai
     fetchItems();
 
     return () => controller.abort();
-  }, [refreshKey, statusFilter]);
+  }, [refreshKey, statusFilter, getAuthHeaders]);
 
   // Close modal when clicking outside or pressing Escape key
   useEffect(() => {
