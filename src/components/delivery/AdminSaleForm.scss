@@ -16,18 +16,6 @@
   padding: 20px;
 }
 
-.form-container {
-  background: white;
-  border-radius: 12px;
-  padding: 0;
-  max-width: 1000px;
-  width: 1000px;
-  max-height: 95vh;
-  height: 95vh;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  animation: slideUp 0.3s ease;
-  overflow: hidden;
-}
 
 .form-container.admin-sale-form {
   max-width: 1000px !important;
