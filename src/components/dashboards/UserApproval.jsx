@@ -29,30 +29,45 @@ const UserApproval = () => {
         return;
       }
       const headers = await getAuthHeaders({ Accept: 'application/json' });
+      const pendingUrl = `${API_BASE}/api/branch-access/pending`;
+      const sessionsUrl = `${API_BASE}/api/branch-access/active-sessions`;
+      console.log('[UserApproval] Fetching:', { pendingUrl, sessionsUrl, headers: Object.keys(headers || {}) });
       const [pendingResp, sessionsResp] = await Promise.all([
-        fetch(`${API_BASE}/api/branch-access/pending`, { credentials: 'include', headers }),
-        fetch(`${API_BASE}/api/branch-access/active-sessions`, { credentials: 'include', headers })
+        fetch(pendingUrl, { credentials: 'include', headers }),
+        fetch(sessionsUrl, { credentials: 'include', headers })
       ]);
+      console.log('[UserApproval] Responses:', {
+        pendingStatus: pendingResp.status,
+        pendingCT: pendingResp.headers.get('content-type'),
+        sessionsStatus: sessionsResp.status,
+        sessionsCT: sessionsResp.headers.get('content-type')
+      });
 
       if (!pendingResp.ok) {
-        const errorData = await pendingResp.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to load pending requests: ${pendingResp.status}`);
+        const txt = await pendingResp.text();
+        console.warn('[UserApproval] Pending non-ok body (truncated):', txt.slice(0,200));
+        let parsed; try { parsed = JSON.parse(txt); } catch (_) {}
+        throw new Error((parsed && parsed.error) || `Failed pending (${pendingResp.status})`);
       }
 
       if (!sessionsResp.ok) {
-        const errorData = await sessionsResp.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to load active sessions: ${sessionsResp.status}`);
+        const txt = await sessionsResp.text();
+        console.warn('[UserApproval] Sessions non-ok body (truncated):', txt.slice(0,200));
+        let parsed; try { parsed = JSON.parse(txt); } catch (_) {}
+        throw new Error((parsed && parsed.error) || `Failed sessions (${sessionsResp.status})`);
       }
 
       const pendingCt = pendingResp.headers.get('content-type') || '';
       const sessionsCt = sessionsResp.headers.get('content-type') || '';
       if (!pendingCt.includes('application/json')) {
         const txt = await pendingResp.text();
-        throw new Error('Pending requests returned non-JSON response: ' + pendingCt + ' body: ' + txt.slice(0,120));
+        console.error('[UserApproval] Pending HTML fallback? First 200 chars:', txt.slice(0,200));
+        throw new Error('Pending non-JSON: ' + pendingCt);
       }
       if (!sessionsCt.includes('application/json')) {
         const txt = await sessionsResp.text();
-        throw new Error('Active sessions returned non-JSON response: ' + sessionsCt + ' body: ' + txt.slice(0,120));
+        console.error('[UserApproval] Sessions HTML fallback? First 200 chars:', txt.slice(0,200));
+        throw new Error('Sessions non-JSON: ' + sessionsCt);
       }
       const pendingData = await pendingResp.json();
       const sessionsData = await sessionsResp.json();
