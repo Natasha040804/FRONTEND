@@ -10,6 +10,7 @@ const AdminSaleForm = ({ item, onSubmit, onClose }) => {
 
   const [canDisplay, setCanDisplay] = useState(false);
   const [loading, setLoading] = useState(false);
+    const API_BASE = getApiBase();
 
   // Check if item can be displayed (past due date + 8 days penalty period)
   useEffect(() => {
@@ -48,7 +49,7 @@ const AdminSaleForm = ({ item, onSubmit, onClose }) => {
 
     try {
       // API call to update the item status to 'Display'
-      const response = await fetch(`/api/items/${item.Items_id}`, {
+      const response = await fetch(`${API_BASE}/api/items/${item.Items_id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
