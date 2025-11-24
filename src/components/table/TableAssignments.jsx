@@ -161,18 +161,18 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '' }) => {
         </Table>
       </TableContainer>
       {viewing && (
-        <div className="detail-overlay">
-          <div className="detail-card assignment-card" style={{ width: '95%', maxWidth: 1100 }}>
-            <div className="detail-card__header">
-              <div className="detail-card__title">
-                <div className="detail-card__item-id">Tracking Assignment #{viewing.assignmentId}</div>
-                <div className="detail-card__item-desc">{viewing.assignedTo || ''}</div>
+        <div className="tracking-overlay">
+          <div className="tracking-card" style={{ width: '95%', maxWidth: 1100 }}>
+            <div className="tracking-card__header">
+              <div className="tracking-card__title">
+                <div className="tracking-card__item-id">Tracking Assignment #{viewing.assignmentId}</div>
+                <div className="tracking-card__item-desc">{viewing.assignedTo || ''}</div>
               </div>
-              <div className="detail-card__header-actions">
-                <button className="detail-card__close-btn" onClick={closeTrack} aria-label="close">×</button>
+              <div className="tracking-card__header-actions">
+                <button className="tracking-card__close-btn" onClick={closeTrack} aria-label="close">×</button>
               </div>
             </div>
-            <div className="detail-card__sections" style={{ height: '70vh' }}>
+            <div className="tracking-card__sections" style={{ height: '70vh' }}>
               <TrackDelivery embedded assignmentId={viewing.assignmentId} onClose={closeTrack} />
             </div>
           </div>
