@@ -1,17 +1,22 @@
 export const getApiBase = () => {
-  // Highest priority: explicit override via global or env
+  // Explicit override via injected global or build-time env
   const override = (typeof window !== 'undefined' && window.__API_BASE__) || process.env.REACT_APP_API_BASE;
   if (override) return override.replace(/\/$/, '');
 
-  // SSR / build-time: fall back based on NODE_ENV
+  // Server-side render / build: choose dev fallback; prod requires explicit override
   if (typeof window === 'undefined') {
-    return process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+    if (process.env.NODE_ENV === 'development') return 'http://localhost:5000';
+    return ''; // expect REACT_APP_API_BASE to be set at build time for production
   }
 
   const host = window.location.hostname;
   // Local dev hosts -> explicit backend port
   if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:5000';
-  // Everything else (EC2 IP, domain, etc.) -> same-origin relative
+
+  // Production: if still no override we warn (relative calls will hit the frontend origin and likely fail with 404/405)
+  if (!override) {
+    console.error('[apiBase] Missing REACT_APP_API_BASE or window.__API_BASE__ in production; API calls will target the frontend host and may return HTML/405.');
+  }
   return '';
 };
 
