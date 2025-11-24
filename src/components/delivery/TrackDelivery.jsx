@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './delivery.scss';
 import apiService from '../../utils/api';
+import { getApiBase } from '../../apiBase';
 import { useAuth } from '../../context/authContext';
 // Ensure default marker icons work in CRA/Webpack
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -82,6 +83,7 @@ const TrackDelivery = ({
   const [notFound, setNotFound] = useState(false);
   const mapRef = useRef(null);
   const [mapReady, setMapReady] = useState(false);
+  const API_BASE = getApiBase();
 
   // Improved OSRM routing helper: returns array of [lat,lng] points or null
   const getOSRMRoute = async (start, end) => {
@@ -245,9 +247,9 @@ const TrackDelivery = ({
         // Try active assignment for personnel (with fallback aliases)
         if (!data && personnelId) {
           const ENDPOINTS = [
-            `/api/delivery-assignments/personnel/${personnelId}/active?role=${encodeURIComponent(currentUserRole)}`,
-            `/api/assignments/active/${personnelId}?role=${encodeURIComponent(currentUserRole)}`,
-            `/api/personnel/${personnelId}/active-assignments?role=${encodeURIComponent(currentUserRole)}`,
+            `${API_BASE}/api/delivery-assignments/personnel/${personnelId}/active?role=${encodeURIComponent(currentUserRole)}`,
+            `${API_BASE}/api/assignments/active/${personnelId}?role=${encodeURIComponent(currentUserRole)}`,
+            `${API_BASE}/api/personnel/${personnelId}/active-assignments?role=${encodeURIComponent(currentUserRole)}`,
           ];
           const headers = await apiService.getAuthHeaders();
           for (const ep of ENDPOINTS) {
@@ -513,9 +515,9 @@ const TrackDelivery = ({
         // Try active for personnel via fallback endpoints with role filtering
         if (!data && personnelId) {
           const ENDPOINTS = [
-            `/api/delivery-assignments/personnel/${personnelId}/active?role=${encodeURIComponent(currentUserRole)}`,
-            `/api/assignments/active/${personnelId}?role=${encodeURIComponent(currentUserRole)}`,
-            `/api/personnel/${personnelId}/active-assignments?role=${encodeURIComponent(currentUserRole)}`,
+            `${API_BASE}/api/delivery-assignments/personnel/${personnelId}/active?role=${encodeURIComponent(currentUserRole)}`,
+            `${API_BASE}/api/assignments/active/${personnelId}?role=${encodeURIComponent(currentUserRole)}`,
+            `${API_BASE}/api/personnel/${personnelId}/active-assignments?role=${encodeURIComponent(currentUserRole)}`,
           ];
           const headers = await apiService.getAuthHeaders();
           for (const ep of ENDPOINTS) {
