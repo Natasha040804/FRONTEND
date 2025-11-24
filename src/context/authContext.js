@@ -104,6 +104,13 @@ export const AuthProvider = ({ children }) => {
         });
       }
 
+      // Detect 405 or HTML response indicating misconfigured API_BASE (frontend host instead of backend)
+      if (response.status === 405 && (API_BASE === '' || API_BASE == null)) {
+        const html = await response.text();
+        console.error('Received 405 from relative login endpoint, likely hitting frontend instead of backend. Set REACT_APP_API_BASE or window.__API_BASE__.');
+        throw new Error('API base URL not configured. Please set REACT_APP_API_BASE to your backend domain.');
+      }
+
       // Check content type to avoid parsing HTML as JSON
       const contentType = response.headers.get('content-type');
       let data;
@@ -111,6 +118,11 @@ export const AuthProvider = ({ children }) => {
         data = await response.json();
       } else {
         const text = await response.text();
+        // Provide clearer diagnostic when HTML encountered
+        if (/<!doctype html>/i.test(text)) {
+          console.error('HTML received instead of JSON (likely wrong host).');
+          throw new Error('Backend unreachable: API base misconfigured.');
+        }
         console.error('Non-JSON response:', text);
         throw new Error(text || 'Unexpected error');
       }
