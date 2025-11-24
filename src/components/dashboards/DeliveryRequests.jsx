@@ -86,7 +86,7 @@ const DeliveryRequests = () => {
     } finally {
       setLoading(false);
     }
-  }, [getStatusField]);
+  }, [getStatusField, getAuthHeaders]);
 
   // Update a personnel's role-specific logistics status
   const updatePersonnelStatus = useCallback(async (personnelId, newStatus) => {
@@ -107,7 +107,7 @@ const DeliveryRequests = () => {
       console.error('Error updating personnel status:', error);
       throw error;
     }
-  }, [getStatusField]);
+  }, [getStatusField, getAuthHeaders]);
 
   // Fetch data when component mounts or currentUser changes
   useEffect(() => {
