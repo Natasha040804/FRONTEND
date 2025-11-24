@@ -102,7 +102,7 @@ const AESale = () => {
 
   const handleSaleSubmit = async (saleData) => {
     try {
-      const response = await fetch(`/api/items/${saleData.itemId}/sell`, {
+      const response = await fetch(`${API_BASE}/api/items/${saleData.itemId}/sell`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
