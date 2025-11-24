@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import '../../components/sidebar/navbar.scss';
+import { getApiBase } from "../../apiBase";
+import { useAuth } from "../../context/authContext";
 
 const initialForm = {
   Branch: "",
@@ -36,26 +38,41 @@ const AddItemModal = ({ open = true, onClose = () => {}, onAdded = () => {} }) =
     setForm((s) => ({ ...s, [name]: value }));
   };
 
+  const { getAuthHeaders } = useAuth();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const res = await fetch("/api/items", {
+      const API_BASE = getApiBase();
+      if (!API_BASE) {
+        setError("API base URL not configured. Cannot submit.");
+        return;
+      }
+      const headers = await getAuthHeaders({ 'Content-Type': 'application/json', Accept: 'application/json' });
+      const res = await fetch(`${API_BASE}/api/items`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
+        credentials: 'include',
         body: JSON.stringify(form),
       });
+      const ct = res.headers.get('content-type') || '';
       if (!res.ok) {
+        // Attempt to read text (could be HTML fallback)
         const txt = await res.text();
-        throw new Error(`Server ${res.status}: ${txt}`);
+        throw new Error(`Server ${res.status}: ${txt.slice(0, 160)}`);
+      }
+      if (!ct.includes('application/json')) {
+        const txt = await res.text();
+        throw new Error(`Unexpected non-JSON response (content-type: ${ct}) body: ${txt.slice(0,160)}`);
       }
       const created = await res.json();
       onAdded(created);
       onClose();
     } catch (err) {
       console.error("Add item failed:", err);
-      setError("Failed to add item. See console for details.");
+      setError(err.message || "Failed to add item. See console for details.");
     } finally {
       setLoading(false);
     }
