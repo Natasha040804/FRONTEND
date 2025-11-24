@@ -13,12 +13,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import { createPortal } from 'react-dom';
 
-const List = ({ refreshKey = 0, onUpdateItem, actionButtonText = "Update", detailView = 'detail', statusFilter, onRowClick, searchTerm = '' }) => {
+const List = ({ refreshKey = 0, onUpdateItem, actionButtonText = "Update", detailView = 'detail', statusFilter, onRowClick, searchTerm = '', userIsAdmin = false }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-    const { getAuthHeaders } = useAuth();
+  const { getAuthHeaders } = useAuth();
 
   // Fetch data from backend using fetch (no axios dependency required)
   useEffect(() => {
@@ -26,6 +26,7 @@ const List = ({ refreshKey = 0, onUpdateItem, actionButtonText = "Update", detai
 
     const fetchItems = async () => {
       try {
+        // Build URL with optional status filter
         const API_BASE = getApiBase();
         let url = `${API_BASE ? API_BASE : ''}/api/items`;
         const params = new URLSearchParams();
@@ -37,7 +38,7 @@ const List = ({ refreshKey = 0, onUpdateItem, actionButtonText = "Update", detai
         }
         const qs = params.toString();
         if (qs) url += `?${qs}`;
-      
+
         const headers = await getAuthHeaders({'Content-Type':'application/json'});
         const res = await fetch(url, { signal: controller.signal, credentials: 'include', headers });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -324,7 +325,7 @@ const List = ({ refreshKey = 0, onUpdateItem, actionButtonText = "Update", detai
                   if (onRowClick) return onRowClick(item);
 
                   // Preserve existing adminForm shortcut behavior
-                  if (detailView === 'adminForm' && onUpdateItem) {
+                  if (detailView === 'adminForm' && onUpdateItem && userIsAdmin) {
                     return onUpdateItem(item);
                   }
 
