@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './AdminSaleForm.scss';
+import { getApiBase } from '../../apiBase';
 
 const AdminSaleForm = ({ item, onSubmit, onClose }) => {
   const [formData, setFormData] = useState({
