@@ -41,7 +41,6 @@ const AddUserModal = ({ open = true, onClose = () => {}, onAdded = () => {} }) =
     }
   };
 
-  const { getAuthHeaders } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
