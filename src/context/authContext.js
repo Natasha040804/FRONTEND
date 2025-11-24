@@ -106,7 +106,6 @@ export const AuthProvider = ({ children }) => {
 
       // Detect 405 or HTML response indicating misconfigured API_BASE (frontend host instead of backend)
       if (response.status === 405 && (API_BASE === '' || API_BASE == null)) {
-        const html = await response.text();
         console.error('Received 405 from relative login endpoint, likely hitting frontend instead of backend. Set REACT_APP_API_BASE or window.__API_BASE__.');
         throw new Error('API base URL not configured. Please set REACT_APP_API_BASE to your backend domain.');
       }
