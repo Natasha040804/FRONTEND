@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import './delivery.scss';
-import { getApiBase } from '../../apiBase';
+import { apiUrl } from '../../apiBase';
+import { useAuth } from '../../context/authContext';
 
 function useQuery() {
   const { search } = useLocation();
@@ -55,11 +56,12 @@ const AssignDelivery = () => {
     notes: '',
     due_date: ''
   });
-  const API_BASE = getApiBase();
+  const { getAuthHeaders } = useAuth();
 
   const fetchBranches = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/users/branches`, { credentials: 'include' });
+      const headers = await getAuthHeaders();
+      const response = await fetch(apiUrl('/api/users/branches'), { credentials: 'include', headers });
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
@@ -69,7 +71,9 @@ const AssignDelivery = () => {
     } catch (error) {
       console.error('Error fetching branches:', error);
     }
-  }, [API_BASE]);
+  // getAuthHeaders provided by context; safe to skip dependency to avoid effect churn
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     fetchBranches();
@@ -80,11 +84,11 @@ const AssignDelivery = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/api/users/delivery-assignments`, {
+      const headers = await getAuthHeaders({ 'Content-Type': 'application/json' });
+      const response = await fetch(apiUrl('/api/users/delivery-assignments'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
+        credentials: 'include',
         body: JSON.stringify({
           assigned_to: parseInt(personnelId),
           ...formData,
@@ -94,6 +98,10 @@ const AssignDelivery = () => {
           to_branch_id: formData.stops[1].branch_id,
         })
       });
+
+      if (response.status === 401) {
+        throw new Error('Unauthorized');
+      }
 
       const result = await response.json();
 
@@ -105,7 +113,7 @@ const AssignDelivery = () => {
       }
     } catch (error) {
       console.error('Error creating assignment:', error);
-      alert('Error creating assignment');
+      alert(error.message === 'Unauthorized' ? 'You are not authorized to create assignments. Please re-login.' : 'Error creating assignment');
     } finally {
       setLoading(false);
     }
