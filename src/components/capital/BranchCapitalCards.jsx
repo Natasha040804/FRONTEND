@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import './capitalInventory.scss';
+import { getApiBase } from '../../apiBase';
 
 export default function BranchCapitalCards({ fetcher }) {
+  const API_BASE = getApiBase();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -13,14 +15,14 @@ export default function BranchCapitalCards({ fetcher }) {
 
   // Auditor can fetch all branches without restrictions
   const fetchBranches = async () => {
-    const res = await fetch('/api/branches', { credentials: 'include' });
+    const res = await fetch(`${API_BASE}/api/branches`, { credentials: 'include' });
     if (!res.ok) throw new Error('Failed to fetch branches');
     return res.json();
   };
 
   // Fetch current capital for all branches (uses latest Current_Capital per branch)
   const fetchAllCurrentCapital = async () => {
-    const res = await fetch('/api/capital/current-capital', { credentials: 'include' });
+    const res = await fetch(`${API_BASE}/api/capital/current-capital`, { credentials: 'include' });
     if (!res.ok) throw new Error('Failed to fetch current capital data');
     return res.json();
   };
@@ -31,10 +33,10 @@ export default function BranchCapitalCards({ fetcher }) {
     try {
       // Fetch all data without branch restrictions
       const [loansRes, redeemsRes, salesRes, currentCapitalRes] = await Promise.all([
-        fetch(`/api/auditor/branches/${branchId}/loans`, { credentials: 'include' }),
-        fetch(`/api/auditor/branches/${branchId}/redeems`, { credentials: 'include' }),
-        fetch(`/api/auditor/branches/${branchId}/sales`, { credentials: 'include' }),
-        fetch(`/api/capital/branches/${branchId}/current-capital`, { credentials: 'include' })
+        fetch(`${API_BASE}/api/auditor/branches/${branchId}/loans`, { credentials: 'include' }),
+        fetch(`${API_BASE}/api/auditor/branches/${branchId}/redeems`, { credentials: 'include' }),
+        fetch(`${API_BASE}/api/auditor/branches/${branchId}/sales`, { credentials: 'include' }),
+        fetch(`${API_BASE}/api/capital/branches/${branchId}/current-capital`, { credentials: 'include' })
       ]);
 
       const loans = await loansRes.json();
