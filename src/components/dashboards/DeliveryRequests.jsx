@@ -10,7 +10,6 @@ import "../personnel/personnel.scss";
 import { useAuth } from '../../context/authContext';
 import { getApiBase } from '../../apiBase';
 
-
 const DeliveryRequests = () => {
   const [personnel, setPersonnel] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +17,7 @@ const DeliveryRequests = () => {
   const [stats, setStats] = useState({ total: 0, standby: 0, assigned: 0 });
   const [selectedPersonnel, setSelectedPersonnel] = useState(null);
   const [forceTrack, setForceTrack] = useState(false);
-  const { currentUser } = useAuth();
+  const { currentUser, getAuthHeaders } = useAuth();
 
   // Determine the status field to inspect/update based on the logged-in user's role
   const getStatusField = useCallback(() => {
@@ -42,9 +41,14 @@ const DeliveryRequests = () => {
       setLoading(true);
       setError(null);
       const API_BASE = getApiBase();
-      const { getAuthHeaders } = useAuth();
+      if (!API_BASE) {
+        console.error('[DeliveryRequests] Missing API base URL. Set REACT_APP_API_BASE or window.__API_BASE__.');
+        setError('API base URL not configured');
+        setLoading(false);
+        return;
+      }
       const headers = await getAuthHeaders({'Content-Type':'application/json'});
-      const response = await fetch(`${API_BASE ? API_BASE : ''}/api/users/role/Logistics`, { headers, credentials:'include' });
+      const response = await fetch(`${API_BASE}/api/users/role/Logistics`, { headers, credentials:'include' });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const result = await response.json();
       if (!result.success) throw new Error(result.message || 'Failed to fetch data');
@@ -89,9 +93,12 @@ const DeliveryRequests = () => {
     try {
       const statusField = getStatusField();
       console.log('[DeliveryRequests] Updating status field', statusField, 'to', newStatus, 'for', personnelId);
-      const response = await fetch(`/api/users/${personnelId}/status`, {
+      const API_BASE = getApiBase();
+      if (!API_BASE) throw new Error('API base URL not configured');
+      const headers = await getAuthHeaders({'Content-Type':'application/json'});
+      const response = await fetch(`${API_BASE}/api/users/${personnelId}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ [statusField]: newStatus.toUpperCase() })
       });
       if (!response.ok) throw new Error('Failed to update status');
