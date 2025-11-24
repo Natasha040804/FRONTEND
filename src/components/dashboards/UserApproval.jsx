@@ -1,6 +1,8 @@
 import Sidebar from "../sidebar/sidebar";
 import "./home.scss";
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { getApiBase } from '../../apiBase';
+import { useAuth } from '../../context/authContext';
 import ApprovalCard from "../card/ApprovalCard";
 
 const UserApproval = () => {
@@ -12,15 +14,24 @@ const UserApproval = () => {
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Load data with better error handling
+  const { getAuthHeaders } = useAuth();
+
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
       console.log('Loading admin data...');
-      
+      const API_BASE = getApiBase();
+      if (!API_BASE) {
+        console.error('[UserApproval] Missing API base URL. Set REACT_APP_API_BASE or window.__API_BASE__');
+        setError('API base URL not configured');
+        setLoading(false);
+        return;
+      }
+      const headers = await getAuthHeaders({ Accept: 'application/json' });
       const [pendingResp, sessionsResp] = await Promise.all([
-        fetch('/api/branch-access/pending', { credentials: 'include' }),
-        fetch('/api/branch-access/active-sessions', { credentials: 'include' })
+        fetch(`${API_BASE}/api/branch-access/pending`, { credentials: 'include', headers }),
+        fetch(`${API_BASE}/api/branch-access/active-sessions`, { credentials: 'include', headers })
       ]);
 
       if (!pendingResp.ok) {
@@ -33,6 +44,16 @@ const UserApproval = () => {
         throw new Error(errorData.error || `Failed to load active sessions: ${sessionsResp.status}`);
       }
 
+      const pendingCt = pendingResp.headers.get('content-type') || '';
+      const sessionsCt = sessionsResp.headers.get('content-type') || '';
+      if (!pendingCt.includes('application/json')) {
+        const txt = await pendingResp.text();
+        throw new Error('Pending requests returned non-JSON response: ' + pendingCt + ' body: ' + txt.slice(0,120));
+      }
+      if (!sessionsCt.includes('application/json')) {
+        const txt = await sessionsResp.text();
+        throw new Error('Active sessions returned non-JSON response: ' + sessionsCt + ' body: ' + txt.slice(0,120));
+      }
       const pendingData = await pendingResp.json();
       const sessionsData = await sessionsResp.json();
 
@@ -47,7 +68,7 @@ const UserApproval = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getAuthHeaders]);
 
   // Auto-refresh effect
   useEffect(() => {
@@ -83,10 +104,12 @@ const UserApproval = () => {
       setError('');
       
       console.log(`Approving request ${id} for ${durationHours} hours`);
-      
-      const resp = await fetch(`/api/branch-access/approve/${id}`, {
+      const API_BASE = getApiBase();
+      if (!API_BASE) throw new Error('API base URL not configured');
+      const headers = await getAuthHeaders({ 'Content-Type': 'application/json', Accept: 'application/json' });
+      const resp = await fetch(`${API_BASE}/api/branch-access/approve/${id}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify({ durationHours })
       });
@@ -115,10 +138,12 @@ const UserApproval = () => {
       setError('');
       
       console.log(`Denying request ${id}, reason: ${reason}`);
-      
-      const resp = await fetch(`/api/branch-access/deny/${id}`, {
+      const API_BASE = getApiBase();
+      if (!API_BASE) throw new Error('API base URL not configured');
+      const headers = await getAuthHeaders({ 'Content-Type': 'application/json', Accept: 'application/json' });
+      const resp = await fetch(`${API_BASE}/api/branch-access/deny/${id}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify({ reason })
       });
@@ -147,10 +172,13 @@ const UserApproval = () => {
       setError('');
       
       console.log(`Ending session ${sessionId}`);
-      
-      const resp = await fetch(`/api/branch-access/end-session/${sessionId}`, {
+      const API_BASE = getApiBase();
+      if (!API_BASE) throw new Error('API base URL not configured');
+      const headers = await getAuthHeaders({ Accept: 'application/json' });
+      const resp = await fetch(`${API_BASE}/api/branch-access/end-session/${sessionId}`, {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers
       });
 
       if (!resp.ok) {
