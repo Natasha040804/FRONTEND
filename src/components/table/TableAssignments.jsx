@@ -135,7 +135,16 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '' }) => {
                 <TableCell className="tableCell clickable">{a.fromBranchName || a.fromBranchId || '—'}</TableCell>
                 <TableCell className="tableCell clickable">{a.toBranchName || '—'}</TableCell>
                 <TableCell className="tableCell">
-                  <button type="button" className="btn btn--primary" onClick={() => setViewing(a)}>View Location</button>
+                  <button
+                    type="button"
+                    className="btn btn--primary"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setViewing(a);
+                    }}
+                  >
+                    View Location
+                  </button>
                 </TableCell>
                
               </TableRow>
