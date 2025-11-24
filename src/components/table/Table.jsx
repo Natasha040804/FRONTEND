@@ -7,6 +7,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { useState, useEffect, useMemo } from "react";
+import { useAuth } from "../../context/authContext";
 import { getApiBase } from "../../apiBase";
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
@@ -17,6 +18,7 @@ const List = ({ refreshKey = 0, onUpdateItem, actionButtonText = "Update", detai
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+    const { getAuthHeaders } = useAuth();
 
   // Fetch data from backend using fetch (no axios dependency required)
   useEffect(() => {
@@ -35,8 +37,9 @@ const List = ({ refreshKey = 0, onUpdateItem, actionButtonText = "Update", detai
         }
         const qs = params.toString();
         if (qs) url += `?${qs}`;
-
-        const res = await fetch(url, { signal: controller.signal, credentials: 'include' });
+      
+        const headers = await getAuthHeaders({'Content-Type':'application/json'});
+        const res = await fetch(url, { signal: controller.signal, credentials: 'include', headers });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setItems(data);
