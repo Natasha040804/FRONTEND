@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import './capitalInventory.scss';
 import { getApiBase } from '../../apiBase';
 
@@ -14,21 +14,21 @@ export default function BranchCapitalCards({ fetcher }) {
   const [detailsLoading, setDetailsLoading] = useState(false);
 
   // Auditor can fetch all branches without restrictions
-  const fetchBranches = async () => {
+  const fetchBranches = useCallback(async () => {
     const res = await fetch(`${API_BASE}/api/branches`, { credentials: 'include' });
     if (!res.ok) throw new Error('Failed to fetch branches');
     return res.json();
-  };
+  }, [API_BASE]);
 
   // Fetch current capital for all branches (uses latest Current_Capital per branch)
-  const fetchAllCurrentCapital = async () => {
+  const fetchAllCurrentCapital = useCallback(async () => {
     const res = await fetch(`${API_BASE}/api/capital/current-capital`, { credentials: 'include' });
     if (!res.ok) throw new Error('Failed to fetch current capital data');
     return res.json();
-  };
+ }, [API_BASE]);
 
   // Auditor can fetch ALL transactions for selected branch (no permission checks) + current capital
-  const fetchBranchDetails = async (branchId) => {
+  const fetchBranchDetails = useCallback(async (branchId) => {
     setDetailsLoading(true);
     try {
       // Fetch all data without branch restrictions
@@ -56,7 +56,7 @@ export default function BranchCapitalCards({ fetcher }) {
     } finally {
       setDetailsLoading(false);
     }
-  };
+  }, [API_BASE]);
 
   // Calculate financial totals (same as before)
   const calculateFinancials = (loans, redeems, sales, currentCapital) => {
@@ -165,7 +165,7 @@ export default function BranchCapitalCards({ fetcher }) {
       }
     })();
     return () => { active = false; };
-  }, [fetcher]);
+  }, [fetchAllCurrentCapital, fetchBranches, fetcher]);
 
   // Fetch branch details when a branch is selected (Auditor view)
   useEffect(() => {
@@ -179,7 +179,7 @@ export default function BranchCapitalCards({ fetcher }) {
     } else {
       setBranchDetails(null);
     }
-  }, [selected]);
+  }, [fetchBranchDetails, selected]);
 
   const enriched = useMemo(() => {
     return items.map(b => {
