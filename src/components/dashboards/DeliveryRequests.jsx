@@ -8,6 +8,8 @@ import AssignDeliveryCard from "./AssignDeliveryCard";
 import TrackDelivery from "../delivery/TrackDelivery";
 import "../personnel/personnel.scss";
 import { useAuth } from '../../context/authContext';
+import { getApiBase } from '../../apiBase';
+
 
 const DeliveryRequests = () => {
   const [personnel, setPersonnel] = useState([]);
@@ -39,7 +41,10 @@ const DeliveryRequests = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/users/role/Logistics');
+      const API_BASE = getApiBase();
+      const { getAuthHeaders } = useAuth();
+      const headers = await getAuthHeaders({'Content-Type':'application/json'});
+      const response = await fetch(`${API_BASE ? API_BASE : ''}/api/users/role/Logistics`, { headers, credentials:'include' });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const result = await response.json();
       if (!result.success) throw new Error(result.message || 'Failed to fetch data');
