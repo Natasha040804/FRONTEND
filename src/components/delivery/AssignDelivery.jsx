@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import './delivery.scss';
+import { getApiBase } from '../../apiBase';
 
 function useQuery() {
   const { search } = useLocation();
@@ -54,6 +55,7 @@ const AssignDelivery = () => {
     notes: '',
     due_date: ''
   });
+  const API_BASE = getApiBase();
 
   useEffect(() => {
     fetchBranches();
@@ -61,7 +63,7 @@ const AssignDelivery = () => {
 
   const fetchBranches = async () => {
     try {
-      const response = await fetch('/api/users/branches');
+      const response = await fetch(`${API_BASE}/api/users/branches`, { credentials: 'include' });
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
@@ -78,7 +80,7 @@ const AssignDelivery = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/users/delivery-assignments', {
+      const response = await fetch(`${API_BASE}/api/users/delivery-assignments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
