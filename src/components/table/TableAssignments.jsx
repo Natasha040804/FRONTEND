@@ -7,10 +7,9 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { getApiBase } from '../../apiBase';
-import ApiService from '../../utils/api';
+import { apiUrl } from '../../apiBase';
 import TrackDelivery from '../delivery/TrackDelivery';
-// auth context not required for public endpoint fetch
+import { useAuth } from '../../context/authContext';
 
 // Columns: Assignment ID, Assignment Type, Assigned By (Username), Assigned To, To Branch, Pickup Proof, Drop Off
 // Drop Off opens detail card + form similar to generic detail pattern
@@ -21,7 +20,7 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '' }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewing, setViewing] = useState(null); // assignment being tracked
-  const API_BASE = getApiBase();
+  const { getAuthHeaders } = useAuth();
   
 
   // Using a fixed dependency list to avoid HMR warnings about changing array size
@@ -31,7 +30,8 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '' }) => {
       try {
         setLoading(true);
         // Use public active assignments to avoid auth 401 on dashboards
-        const res = await fetch(`${API_BASE}/api/delivery-assignments/active`, { signal: controller.signal, credentials: 'include' });
+        const headers = await getAuthHeaders();
+        const res = await fetch(apiUrl('/api/delivery-assignments/active'), { signal: controller.signal, credentials: 'include', headers });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const payload = await res.json();
         const data = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : [];
@@ -72,27 +72,41 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '' }) => {
     };
     fetchAssignments();
     return () => controller.abort();
-  }, [refreshKey, API_BASE, branches, users]);
+  }, [refreshKey, branches, users, getAuthHeaders]);
 
   // fetch branches and users lookup for display names (run once)
   useEffect(() => {
     const fetchLookups = async () => {
       try {
-        const b = await ApiService.get('/api/users/branches');
-        if (b && b.success && Array.isArray(b.data)) setBranches(b.data);
+        const headers = await getAuthHeaders();
+        const branchResp = await fetch(apiUrl('/api/users/branches'), {
+          credentials: 'include',
+          headers
+        });
+        if (branchResp.ok) {
+          const b = await branchResp.json();
+          if (b && b.success && Array.isArray(b.data)) setBranches(b.data);
+        }
       } catch (e) {
         console.warn('Could not fetch branches for assignments table', e);
       }
       try {
-        const u = await ApiService.get('/api/users');
-        if (Array.isArray(u)) setUsers(u);
-        else if (u && Array.isArray(u.data)) setUsers(u.data);
+        const headers = await getAuthHeaders();
+        const usersResp = await fetch(apiUrl('/api/users'), {
+          credentials: 'include',
+          headers
+        });
+        if (usersResp.ok) {
+          const u = await usersResp.json();
+          if (Array.isArray(u)) setUsers(u);
+          else if (u && Array.isArray(u.data)) setUsers(u.data);
+        }
       } catch (e) {
         console.warn('Could not fetch users for assignments table', e);
       }
     };
     fetchLookups();
-  }, []);
+  }, [getAuthHeaders]);
 
   const filtered = useMemo(() => {
     if (!searchTerm) return assignments;
@@ -122,23 +136,12 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '' }) => {
               <TableCell className="tableCell">Pick Up</TableCell>
               <TableCell className="tableCell">Drop Off</TableCell>
               <TableCell className="tableCell">View Location</TableCell>
+        
             </TableRow>
           </TableHead>
           <TableBody>
             {filtered.map(a => (
-              <TableRow
-                key={a.assignmentId}
-                className="clickable-row"
-                onClick={() => setViewing(a)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setViewing(a);
-                  }
-                }}
-              >
+              <TableRow key={a.assignmentId} className="clickable-row">
                 <TableCell className="tableCell clickable">{a.assignmentId}</TableCell>
                 <TableCell className="tableCell clickable">{a.assignedBy}</TableCell>
                 <TableCell className="tableCell clickable">{a.assignedTo}</TableCell>
@@ -146,17 +149,9 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '' }) => {
                 <TableCell className="tableCell clickable">{a.fromBranchName || a.fromBranchId || '—'}</TableCell>
                 <TableCell className="tableCell clickable">{a.toBranchName || '—'}</TableCell>
                 <TableCell className="tableCell">
-                  <button
-                    type="button"
-                    className="btn btn--primary"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setViewing(a);
-                    }}
-                  >
-                    View Location
-                  </button>
+                  <button type="button" className="btn btn--primary" onClick={() => setViewing(a)}>View Location</button>
                 </TableCell>
+               
               </TableRow>
             ))}
           </TableBody>
