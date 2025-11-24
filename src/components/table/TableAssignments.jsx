@@ -72,7 +72,9 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '' }) => {
     };
     fetchAssignments();
     return () => controller.abort();
-  }, [refreshKey, branches, users, getAuthHeaders]);
+  // getAuthHeaders comes from context and is stable enough for controlled usage
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey, branches, users]);
 
   // fetch branches and users lookup for display names (run once)
   useEffect(() => {
@@ -106,7 +108,8 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '' }) => {
       }
     };
     fetchLookups();
-  }, [getAuthHeaders]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filtered = useMemo(() => {
     if (!searchTerm) return assignments;
