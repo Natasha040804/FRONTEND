@@ -21,7 +21,8 @@ const AddUserModal = ({ open = true, onClose = () => {}, onAdded = () => {} }) =
   const [error, setError] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
-
+  // Hooks must be declared before any conditional returns
+  const { getAuthHeaders } = useAuth();
   if (!open) return null;
 
   const onChange = (e) => {
