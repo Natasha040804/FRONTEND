@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import './delivery.scss';
 import { getApiBase } from '../../apiBase';
@@ -57,11 +57,7 @@ const AssignDelivery = () => {
   });
   const API_BASE = getApiBase();
 
-  useEffect(() => {
-    fetchBranches();
-  }, []);
-
-  const fetchBranches = async () => {
+  const fetchBranches = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE}/api/users/branches`, { credentials: 'include' });
       if (response.ok) {
@@ -73,7 +69,11 @@ const AssignDelivery = () => {
     } catch (error) {
       console.error('Error fetching branches:', error);
     }
-  };
+  }, [API_BASE]);
+
+  useEffect(() => {
+    fetchBranches();
+  }, [fetchBranches]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
