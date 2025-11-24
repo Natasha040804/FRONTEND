@@ -7,31 +7,51 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { useState, useEffect, useMemo } from "react";
+import { getApiBase } from "../../apiBase";
+import { useAuth } from "../../context/authContext";
 
 const UsersTable = ({ refreshKey = 0, searchTerm = '' }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const { getAuthHeaders } = useAuth();
+
   useEffect(() => {
     const controller = new AbortController();
     (async () => {
       try {
-        const res = await fetch("/api/users", { signal: controller.signal, credentials: 'include' });
+        setLoading(true);
+        setError(null);
+        const API_BASE = getApiBase();
+        if (!API_BASE) {
+          console.error("[UsersTable] Missing API base URL. Set REACT_APP_API_BASE or window.__API_BASE__.");
+          setError("API base URL not configured");
+          return;
+        }
+        const headers = await getAuthHeaders({ Accept: 'application/json' });
+        const res = await fetch(`${API_BASE}/api/users`, { signal: controller.signal, credentials: 'include', headers });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          const text = await res.text();
+          console.error('[UsersTable] Non-JSON response body (truncated):', text.slice(0, 120));
+          throw new Error('Unexpected non-JSON response (content-type: ' + ct + ')');
+        }
         const data = await res.json();
         setUsers(data);
       } catch (e) {
-        if (e.name !== "AbortError") {
-          console.error(e);
-          setError("Failed to fetch users");
+        if (e.name !== 'AbortError') {
+          console.error('[UsersTable] Fetch error:', e);
+          setError(e.message || 'Failed to fetch users');
+          setUsers([]);
         }
       } finally {
         setLoading(false);
       }
     })();
     return () => controller.abort();
-  }, [refreshKey]);
+  }, [refreshKey, getAuthHeaders]);
 
   // Derived filtered users before early returns (hook order)
   const filteredUsers = useMemo(() => {
