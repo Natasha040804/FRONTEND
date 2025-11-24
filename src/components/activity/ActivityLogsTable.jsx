@@ -47,7 +47,7 @@ export default function ActivityLogsTable({ branchId, limit = 50 }) {
       cancelled = true;
       controller.abort();
     };
-  }, [branchId, limit]);
+  }, [API_BASE, branchId, limit]);
 
   return (
     <div className="activity-table-wrapper">
