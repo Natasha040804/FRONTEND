@@ -7,7 +7,6 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { createPortal } from 'react-dom';
 import { getApiBase } from '../../apiBase';
 import ApiService from '../../utils/api';
 import TrackDelivery from '../delivery/TrackDelivery';
@@ -15,13 +14,12 @@ import TrackDelivery from '../delivery/TrackDelivery';
 
 // Columns: Assignment ID, Assignment Type, Assigned By (Username), Assigned To, To Branch, Pickup Proof, Drop Off
 // Drop Off opens detail card + form similar to generic detail pattern
-const TableAssignments = ({ refreshKey = 0, searchTerm = '', onSubmitDropoff }) => {
+const TableAssignments = ({ refreshKey = 0, searchTerm = '' }) => {
   const [assignments, setAssignments] = useState([]);
   const [branches, setBranches] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selected, setSelected] = useState(null); // currently opened assignment
   const [viewing, setViewing] = useState(null); // assignment being tracked
   const API_BASE = getApiBase();
   
@@ -102,89 +100,7 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '', onSubmitDropoff }) 
     return assignments.filter(a => [a.assignmentId, a.assignedBy, a.assignedTo].some(f => f && String(f).toLowerCase().includes(t)));
   }, [assignments, searchTerm]);    
 
-  const openDropOff = (row) => setSelected(row);
-  const closeModal = () => setSelected(null);
   const closeTrack = () => setViewing(null);
-
-  useEffect(() => {
-    if (!selected) return;
-    const esc = (e) => { if (e.key === 'Escape') closeModal(); };
-    const outside = (e) => { if (selected && e.target.closest('.assignment-card') === null) closeModal(); };
-    document.addEventListener('keydown', esc);
-    document.addEventListener('mousedown', outside);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', esc);
-      document.removeEventListener('mousedown', outside);
-      document.body.style.overflow = 'unset';
-    };
-  }, [selected]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = Object.fromEntries(new FormData(e.currentTarget));
-    if (typeof onSubmitDropoff === 'function') onSubmitDropoff({ ...selected, ...formData });
-    closeModal();
-  };
-
-  const DetailCard = () => {
-    if (!selected) return null;
-    return createPortal(
-      <div className="detail-overlay">
-        <div className="detail-card assignment-card">
-          <div className="detail-card__header">
-            <div className="detail-card__title">
-              <div className="detail-card__item-id">Assignment #{selected.assignmentId}</div>
-              <div className="detail-card__item-desc">Assigned To: {selected.assignedTo}</div>
-            </div>
-            <div className="detail-card__header-actions">
-              <button className="detail-card__close-btn" onClick={closeModal} aria-label="close">×</button>
-            </div>
-          </div>
-          <div className="detail-card__sections">
-            <div className="detail-section">
-              <h3 className="detail-section__title">Assignment Details</h3>
-              <div className="detail-section__grid">
-                <div className="detail-field">
-                  <label className="detail-field__label">Assigned By</label>
-                  <div className="detail-field__value">{selected.assignedBy}</div>
-                </div>
-                <div className="detail-field">
-                  <label className="detail-field__label">Assigned To</label>
-                  <div className="detail-field__value">{selected.assignedTo}</div>
-                </div>
-                <div className="detail-field">
-                  <label className="detail-field__label">Status</label>
-                  <div className="detail-field__value">{selected.dropOffStatus}</div>
-                </div>
-              </div>
-            </div>
-            <div className="detail-section">
-              <h3 className="detail-section__title">Drop Off Form</h3>
-              <form onSubmit={handleSubmit} className="dropoff-form">
-                <div className="detail-section__grid">
-                  <div className="detail-field">
-                    <label className="detail-field__label">Branch</label>
-                    <input name="dropoffBranch" required placeholder="Enter branch" />
-                  </div>
-                  <div className="detail-field">
-                    <label className="detail-field__label">Receiver</label>
-                    <input name="receiver" required placeholder="Receiver name" />
-                  </div>
-                  <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
-                    <label className="detail-field__label">Notes</label>
-                    <textarea name="notes" rows={3} placeholder="Optional notes" />
-                  </div>
-                </div>
-                
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>,
-      document.body
-    );
-  };
 
   if (loading) return <div className="loading">Loading assignments...</div>;
   if (error) return <div className="error">{error}</div>;
@@ -212,12 +128,12 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '', onSubmitDropoff }) 
           <TableBody>
             {filtered.map(a => (
               <TableRow key={a.assignmentId} className="clickable-row">
-                <TableCell className="tableCell clickable" onClick={() => openDropOff(a)}>{a.assignmentId}</TableCell>
-                <TableCell className="tableCell clickable" onClick={() => openDropOff(a)}>{a.assignedBy}</TableCell>
-                <TableCell className="tableCell clickable" onClick={() => openDropOff(a)}>{a.assignedTo}</TableCell>
-                <TableCell className="tableCell clickable" onClick={() => openDropOff(a)}>{a.assignmentType || '—'}</TableCell>
-                <TableCell className="tableCell clickable" onClick={() => openDropOff(a)}>{a.fromBranchName || a.fromBranchId || '—'}</TableCell>
-                <TableCell className="tableCell clickable" onClick={() => openDropOff(a)}>{a.toBranchName || '—'}</TableCell>
+                <TableCell className="tableCell clickable">{a.assignmentId}</TableCell>
+                <TableCell className="tableCell clickable">{a.assignedBy}</TableCell>
+                <TableCell className="tableCell clickable">{a.assignedTo}</TableCell>
+                <TableCell className="tableCell clickable">{a.assignmentType || '—'}</TableCell>
+                <TableCell className="tableCell clickable">{a.fromBranchName || a.fromBranchId || '—'}</TableCell>
+                <TableCell className="tableCell clickable">{a.toBranchName || '—'}</TableCell>
                 <TableCell className="tableCell">
                   <button type="button" className="btn btn--primary" onClick={() => setViewing(a)}>View Location</button>
                 </TableCell>
@@ -227,7 +143,6 @@ const TableAssignments = ({ refreshKey = 0, searchTerm = '', onSubmitDropoff }) 
           </TableBody>
         </Table>
       </TableContainer>
-      <DetailCard />
       {viewing && (
         <div className="detail-overlay">
           <div className="detail-card assignment-card" style={{ width: '95%', maxWidth: 1100 }}>
