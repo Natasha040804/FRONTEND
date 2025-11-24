@@ -1,13 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import './AdminSaleForm.scss';
 import { apiUrl } from '../../apiBase';
 
 const AdminSaleForm = ({ item, onSubmit, onClose }) => {
-  if (!item) {
-    return null;
-  }
-
   const [formData, setFormData] = useState({
     saleAmount: '',
     saleDate: new Date().toISOString().split('T')[0]
