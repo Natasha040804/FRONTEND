@@ -7,6 +7,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { useState, useEffect, useMemo } from "react";
+import { getApiBase } from "../../apiBase";
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import { createPortal } from 'react-dom';
@@ -23,8 +24,8 @@ const List = ({ refreshKey = 0, onUpdateItem, actionButtonText = "Update", detai
 
     const fetchItems = async () => {
       try {
-        // Build URL with optional status filter
-        let url = '/api/items';
+        const API_BASE = getApiBase();
+        let url = `${API_BASE ? API_BASE : ''}/api/items`;
         const params = new URLSearchParams();
         if (statusFilter) {
           params.append('status', statusFilter);
